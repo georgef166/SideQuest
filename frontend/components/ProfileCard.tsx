@@ -86,24 +86,24 @@ export function ProfileCompletionCard({
   if (percentage === 100) return null;
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-      <h3 className="text-base font-semibold text-blue-900 mb-2">
+    <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 mb-8">
+      <h3 className="text-base font-semibold text-[#4A295F] mb-2">
         Complete your profile
       </h3>
-      <p className="text-sm text-blue-800 mb-4">
+      <p className="text-sm text-purple-900 mb-4">
         You are {percentage}% done! Just {100 - percentage}% more to unlock better recommendations.
       </p>
 
-      <div className="w-full bg-blue-200 rounded-full h-2 mb-4">
+      <div className="w-full bg-purple-200 rounded-full h-2 mb-4">
         <div
-          className="bg-blue-600 h-2 rounded-full transition-all"
+          className="bg-[#4A295F] h-2 rounded-full transition-all"
           style={{ width: `${percentage}%` }}
         />
       </div>
 
       <div className="space-y-2">
         {incompleteFields.map((field, idx) => (
-          <p key={idx} className="text-sm text-blue-700">
+          <p key={idx} className="text-sm text-purple-800">
             • {field}
           </p>
         ))}
