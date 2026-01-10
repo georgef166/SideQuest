@@ -70,14 +70,14 @@ export default function FavoritesPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/')}
-                className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition"
+                className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition cursor-pointer"
               >
                 SideQuest
               </button>
               {user && (
                 <button
                   onClick={() => router.push('/profile')}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm"
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
                 >
                   Profile
                 </button>
@@ -118,7 +118,7 @@ export default function FavoritesPage() {
                 </p>
                 <button
                   onClick={() => router.push('/')}
-                  className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition"
+                  className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition cursor-pointer"
                 >
                   Discover Quests
                 </button>
@@ -255,14 +255,14 @@ export default function FavoritesPage() {
                               
                               router.push(`/quest/${quest.quest_id}`);
                             }}
-                            className="flex-1 px-4 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition text-sm font-medium"
+                            className="flex-1 px-4 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition text-sm font-medium cursor-pointer"
                           >
                             View Quest
                           </button>
                           <button
                             onClick={() => handleRemoveFavorite(favorite.item_id)}
                             disabled={removingId === favorite.item_id}
-                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition text-sm font-medium disabled:opacity-50"
+                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition text-sm font-medium disabled:opacity-50 cursor-pointer"
                           >
                             {removingId === favorite.item_id ? '...' : '🗑️'}
                           </button>

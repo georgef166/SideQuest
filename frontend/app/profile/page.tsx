@@ -89,13 +89,13 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
           onClick={() => router.push('/favorites')}
-          className="px-6 py-4 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
+          className="px-6 py-4 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium cursor-pointer"
         >
           View Favorites
         </button>
         <button
           onClick={() => router.push('/')}
-          className="px-6 py-4 bg-purple-100 text-[#4A295F] rounded-lg hover:bg-purple-200 transition font-medium"
+          className="px-6 py-4 bg-purple-100 text-[#4A295F] rounded-lg hover:bg-purple-200 transition font-medium cursor-pointer"
         >
           Discover Quests
         </button>
@@ -128,7 +128,7 @@ export default function ProfilePage() {
           </p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
+            className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium cursor-pointer"
           >
             Discover Quests
           </button>
@@ -309,14 +309,14 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/')}
-                className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition"
+                className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition cursor-pointer"
               >
                 SideQuest
               </button>
               {user && (
                 <button
                   onClick={() => router.push('/favorites')}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm"
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
                 >
                   Favorites
                 </button>
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                         <button
                           key={section.id}
                           onClick={() => setActiveSection(section.id)}
-                          className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all border-l-4 ${
+                          className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all border-l-4 cursor-pointer ${
                             activeSection === section.id
                               ? 'bg-purple-50 border-l-[#4A295F] text-[#4A295F]'
                               : 'border-l-transparent text-gray-700 hover:bg-gray-50'
