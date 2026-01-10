@@ -269,6 +269,13 @@ class QuestGenerator:
         
         return quests
     
+    def _has_high_ratings(self, places: List[Place], min_rating: float = 4.0) -> bool:
+        """Check if places have ratings above threshold"""
+        rated_places = [p for p in places if p.rating is not None]
+        if not rated_places:
+            return False
+        return any(p.rating >= min_rating for p in rated_places)
+    
     def _create_coffee_walk_quest(self, cafe: Place, park: Place) -> Quest:
         """Create a coffee + walk quest"""
         return Quest(
@@ -299,7 +306,7 @@ class QuestGenerator:
                     location=park.location or Location(lat=0, lng=0)
                 )
             ],
-            tags=["coffee", "outdoor", "relaxing", "walkable"],
+            tags=["Cafe", "Active", "Relaxation", "Urban"],
             best_time="morning",
             created_at=datetime.now()
         )
@@ -327,7 +334,7 @@ class QuestGenerator:
                     location=place.location or Location(lat=0, lng=0)
                 ) for i, place in enumerate(places)
             ],
-            tags=["cheap", "student", "food"],
+            tags=["Cheap", "Food", "Social"],
             best_time="evening",
             created_at=datetime.now()
         )
@@ -335,6 +342,13 @@ class QuestGenerator:
     def _create_food_tour_quest(self, places: List[Place]) -> Quest:
         """Create a food tour quest"""
         total_cost = sum([p.price_level or 2 for p in places]) * 15
+        
+        # Base tags
+        tags = ["Food", "Cultural"]
+        
+        # Only add 'Local Favorites' if places have good ratings
+        if self._has_high_ratings(places):
+            tags.append("Local Favorites")
         
         return Quest(
             quest_id=str(uuid.uuid4()),
@@ -355,7 +369,7 @@ class QuestGenerator:
                     location=place.location or Location(lat=0, lng=0)
                 ) for i, place in enumerate(places)
             ],
-            tags=["food", "local", "dining"],
+            tags=tags,
             best_time="lunch",
             created_at=datetime.now()
         )
@@ -392,7 +406,7 @@ class QuestGenerator:
                     location=cafe.location or Location(lat=0, lng=0)
                 )
             ],
-            tags=["shopping", "coffee", "leisure"],
+            tags=["Shopping", "Cafe", "Relaxation"],
             best_time="afternoon",
             created_at=datetime.now()
         )
@@ -429,7 +443,7 @@ class QuestGenerator:
                     location=bar.location or Location(lat=0, lng=0)
                 )
             ],
-            tags=["nightlife", "social", "dining", "drinks"],
+            tags=["Nightlife", "Social", "Food", "Bar"],
             best_time="evening",
             created_at=datetime.now()
         )
@@ -437,6 +451,13 @@ class QuestGenerator:
     def _create_exploration_quest(self, places: List[Place]) -> Quest:
         """Create a generic exploration quest from any places"""
         total_cost = sum([p.price_level or 2 for p in places]) * 10
+        
+        # Base tags
+        tags = ["Adventure", "Hidden Gems"]
+        
+        # Only add 'Local Favorites' if places have good ratings
+        if self._has_high_ratings(places):
+            tags.append("Local Favorites")
         
         return Quest(
             quest_id=str(uuid.uuid4()),
@@ -457,7 +478,7 @@ class QuestGenerator:
                     location=place.location or Location(lat=0, lng=0)
                 ) for i, place in enumerate(places)
             ],
-            tags=["exploration", "local", "adventure"],
+            tags=tags,
             best_time="afternoon",
             created_at=datetime.now()
         )
@@ -483,7 +504,7 @@ class QuestGenerator:
                     location=event.location or Location(lat=0, lng=0)
                 )
             ],
-            tags=["event", "entertainment", event.category.lower()],
+            tags=["Events", "Entertainment", "Live"],
             best_time="evening",
             created_at=datetime.now()
         )
@@ -518,7 +539,7 @@ class QuestGenerator:
                     location=event.location or Location(lat=0, lng=0)
                 )
             ],
-            tags=["events", "nightlife", "social"],
+            tags=["Events", "Nightlife", "Social", "Food"],
             best_time="evening",
             created_at=datetime.now()
         )
@@ -621,7 +642,7 @@ class QuestGenerator:
                     location=Location(lat=43.2623, lng=-79.9168)
                 )
             ],
-            tags=["campus", "educational", "relaxing", "student"],
+            tags=["Cultural", "Active", "Relaxation", "Cheap"],
             best_time="afternoon",
             created_at=datetime.now()
         ))
@@ -664,7 +685,7 @@ class QuestGenerator:
                     location=Location(lat=43.2580, lng=-79.8670)
                 )
             ],
-            tags=["food", "downtown", "social", "moderate"],
+            tags=["Food", "Urban", "Social"],
             best_time="afternoon",
             created_at=datetime.now()
         ))
@@ -707,7 +728,7 @@ class QuestGenerator:
                     location=Location(lat=43.2720, lng=-79.8600)
                 )
             ],
-            tags=["outdoor", "relaxing", "nature", "cheap"],
+            tags=["Active", "Relaxation", "Adventure", "Cheap"],
             best_time="evening",
             created_at=datetime.now()
         ))

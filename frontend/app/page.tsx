@@ -9,10 +9,14 @@ import { useAuth } from '@/lib/useAuth';
 import { useInitializeProfile } from '@/lib/useInitializeProfile';
 import { apiClient } from '@/lib/api';
 import { Quest, Location } from '@/lib/types';
+import { addToFavorites, removeFromFavorites, getFavorites } from '@/lib/favorites';
+import { saveUserPreferences, getUserPreferences } from '@/lib/preferences';
+import { useToast } from '@/lib/toast';
 
 export default function Home() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const { showToast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -29,6 +33,8 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<string>('distance-asc');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [togglingFavorite, setTogglingFavorite] = useState<string | null>(null);
 
   const categories = [
     'Sports',
@@ -61,6 +67,85 @@ export default function Home() {
     return text.toLowerCase().includes(query.toLowerCase());
   };
 
+  // Load user's favorites
+  const loadFavorites = async () => {
+    if (!user) return;
+    try {
+      const userFavorites = await getFavorites(user.uid);
+      const ids = new Set(userFavorites.map(fav => fav.item_id));
+      setFavoriteIds(ids);
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
+  };
+
+  // Load user preferences
+  const loadPreferences = async () => {
+    if (!user) return;
+    try {
+      const prefs = await getUserPreferences(user.uid);
+      if (prefs) {
+        if (prefs.radius) setRadiusRange(prefs.radius);
+        if (prefs.categories) setSelectedCategories(prefs.categories);
+      }
+    } catch (error) {
+      console.error('Error loading preferences:', error);
+    }
+  };
+
+  // Save preferences when they change
+  useEffect(() => {
+    if (!user) return;
+    
+    const savePrefs = async () => {
+      try {
+        await saveUserPreferences(user.uid, {
+          radius: radiusRange,
+          categories: selectedCategories,
+          lastLocation: userLocation || undefined,
+        });
+      } catch (error) {
+        console.error('Error saving preferences:', error);
+      }
+    };
+
+    // Debounce the save
+    const timer = setTimeout(savePrefs, 1000);
+    return () => clearTimeout(timer);
+  }, [user, radiusRange, selectedCategories, userLocation]);
+
+  // Toggle favorite status
+  const toggleFavorite = async (quest: Quest, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation
+    if (!user) {
+      showToast('Please sign in to save favorites', 'warning');
+      return;
+    }
+
+    try {
+      setTogglingFavorite(quest.quest_id);
+      
+      if (favoriteIds.has(quest.quest_id)) {
+        await removeFromFavorites(user.uid, quest.quest_id);
+        setFavoriteIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(quest.quest_id);
+          return newSet;
+        });
+        showToast('Removed from favorites', 'success');
+      } else {
+        await addToFavorites(user.uid, quest.quest_id, 'quest', quest);
+        setFavoriteIds(prev => new Set(prev).add(quest.quest_id));
+        showToast('Added to favorites!', 'success');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      showToast('Failed to update favorite', 'error');
+    } finally {
+      setTogglingFavorite(null);
+    }
+  };
+
   // Initialize user profile on first login
   useInitializeProfile();
 
@@ -69,7 +154,7 @@ export default function Home() {
     const timer = setTimeout(() => {
       console.log('Debounced radius updated - Range:', radiusRange);
       setDebouncedRadiusRange(radiusRange);
-    }, 500); // Wait 500ms after user stops dragging
+    }, 300); // Wait 300ms after user stops dragging
 
     return () => clearTimeout(timer);
   }, [radiusRange]);
@@ -77,6 +162,10 @@ export default function Home() {
   // Get user's location on mount
   useEffect(() => {
     if (!user) return;
+
+    // Load favorites and preferences
+    loadFavorites();
+    loadPreferences();
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -196,9 +285,9 @@ export default function Home() {
                 ${quest.description}
               </p>
               <div style="display: flex; gap: 12px; font-size: 12px; color: #4b5563;">
-                <span>⏱️ ${quest.estimated_time}min</span>
-                <span>💰 $${quest.estimated_cost}</span>
-                <span>📍 ${quest.steps.length} stops</span>
+                <span>${quest.estimated_time}min</span>
+                <span>$${quest.estimated_cost}</span>
+                <span>${quest.steps.length} stops</span>
               </div>
               <button 
                 onclick="window.location.href='/quest/${quest.quest_id}'"
@@ -250,7 +339,7 @@ export default function Home() {
         const response = await apiClient.post<Quest[]>('/api/quests/generate', {
           location: userLocation,
           radius_km: debouncedRadiusRange[1],
-          categories: null,
+          categories: selectedCategories.length > 0 ? selectedCategories : null,
           preferences: {
             min_radius_km: debouncedRadiusRange[0],
           },
@@ -268,7 +357,7 @@ export default function Home() {
     };
 
     fetchQuests();
-  }, [userLocation, user, debouncedRadiusRange]);
+  }, [userLocation, user, debouncedRadiusRange, selectedCategories]);
 
   // Filter quests based on search and categories
   const filteredQuests = quests.filter((quest) => {
@@ -330,6 +419,22 @@ export default function Home() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-[#4A295F]">SideQuest</h1>
+              {user && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => router.push('/favorites')}
+                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm"
+                  >
+                    Favorites
+                  </button>
+                  <button
+                    onClick={() => router.push('/profile')}
+                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm"
+                  >
+                    Profile
+                  </button>
+                </div>
+              )}
             </div>
             <AuthButton />
           </div>
@@ -386,6 +491,9 @@ export default function Home() {
 
               {/* Category Filter */}
               <div className="mb-6">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Categories
+                </label>
                 <div className="overflow-x-auto scrollbar-hide">
                   <div className="flex gap-2 pb-2" style={{ width: 'max-content' }}>
                     {categories.map((category) => (
@@ -423,11 +531,13 @@ export default function Home() {
                 </div>
                 {selectedCategories.length > 0 && (
                   <button
-                    onClick={() => setSelectedCategories([])}
+                    onClick={() => {
+                      setSelectedCategories([]);
+                    }}
                     className="mt-2 text-sm hover:underline"
                     style={{ color: '#4A295F' }}
                   >
-                    Clear filters ({selectedCategories.length})
+                    Clear all filters ({selectedCategories.length})
                   </button>
                 )}
               </div>
@@ -512,7 +622,7 @@ export default function Home() {
                         {(searchQuery || selectedCategories.length > 0) && (
                           <span className="text-xs block mt-1 text-purple-700">
                             {searchQuery && `Searching: "${searchQuery}"`}
-                            {selectedCategories.length > 0 && ` • ${selectedCategories.length} filter(s)`}
+                            {selectedCategories.length > 0 && ` • ${selectedCategories.length} categories`}
                           </span>
                         )}
                       </div>
@@ -548,17 +658,36 @@ export default function Home() {
                   <div
                     key={quest.quest_id}
                     id={`quest-${quest.quest_id}`}
-                    className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer border border-gray-200 ${
-                      selectedQuestId === quest.quest_id ? 'ring-2 ring-[#4A295F]' : ''
+                    className={`bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 border border-gray-200 hover:shadow-2xl hover:-translate-y-1 relative group ${
+                      selectedQuestId === quest.quest_id ? 'ring-2 ring-[#4A295F] shadow-xl' : ''
                     }`}
                     onMouseEnter={() => setSelectedQuestId(quest.quest_id)}
                     onMouseLeave={() => setSelectedQuestId(null)}
                     onClick={() => {
+                      // Ensure quests are saved to localStorage before navigating
+                      localStorage.setItem('currentQuests', JSON.stringify(quests));
                       router.push(`/quest/${quest.quest_id}`);
                     }}
                   >
                     {/* Activity Image */}
-                    <div className="w-full h-48 bg-gray-200 overflow-hidden">
+                    <div className="w-full h-56 bg-gray-200 overflow-hidden relative">
+                      {/* Favorite Button */}
+                      <button
+                        onClick={(e) => toggleFavorite(quest, e)}
+                        disabled={togglingFavorite === quest.quest_id}
+                        className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md hover:scale-110 hover:bg-white transition-all duration-200 flex items-center justify-center disabled:opacity-50"
+                        title={favoriteIds.has(quest.quest_id) ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill={favoriteIds.has(quest.quest_id) ? '#FF385C' : 'none'}
+                          stroke={favoriteIds.has(quest.quest_id) ? '#FF385C' : '#6b7280'}
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                      </button>
                       <img
                         src={(() => {
                           // Priority 1: Use tag-based themed image
@@ -656,10 +785,16 @@ export default function Home() {
                       {/* Footer Info */}
                       <div className="flex justify-between items-center text-sm text-gray-600 border-t border-gray-100 pt-3">
                         <div className="flex gap-4">
-                          <span>
+                          <span className="flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                             <strong>{quest.estimated_time}</strong> min
                           </span>
-                          <span>
+                          <span className="flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                             <strong>${Math.round(quest.estimated_cost)}</strong>
                           </span>
                         </div>
@@ -685,6 +820,7 @@ export default function Home() {
                   onClick={() => {
                     setSearchQuery('');
                     setSelectedCategories([]);
+                    setBudget(null);
                   }}
                   className="px-6 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition"
                 >

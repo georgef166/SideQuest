@@ -2,407 +2,349 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useAuth } from '@/lib/useAuth';
-import { getProfileByUid, getIncompleteFields } from '@/lib/profileService';
-import { UserProfile } from '@/lib/profileTypes';
-import {
-  ProfileCard,
-  SectionHeader,
-  ProfileCompletionCard,
-  EmptyState,
-} from '@/components/ProfileCard';
-
-type SectionId = 'about' | 'lifestyle' | 'preferences' | 'stats';
-
-interface Section {
-  id: SectionId;
-  label: string;
-  render: () => React.ReactNode;
-}
+import { getUserStats, UserStats } from '@/lib/completions';
+import { getFavorites } from '@/lib/favorites';
+import { getUserPreferences } from '@/lib/preferences';
+import AuthButton from '@/components/AuthButton';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<SectionId>('about');
-
-  const formatDate = (date: any) => {
-    if (!date) return '';
-    const d = new Date(date.seconds ? date.seconds * 1000 : date);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  const { user, loading } = useAuth();
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [favoritesCount, setFavoritesCount] = useState(0);
+  const [preferences, setPreferences] = useState<any>(null);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    if (authLoading) return;
     if (!user) {
-      router.push('/');
+      setLoadingData(false);
       return;
     }
 
-    loadProfile();
-  }, [user, authLoading, router]);
+    loadUserData();
+  }, [user]);
 
-  async function loadProfile() {
+  const loadUserData = async () => {
+    if (!user) return;
+
     try {
-      setLoading(true);
-      const data = await getProfileByUid(user!.uid);
-      if (data) {
-        setProfile(data);
-      } else {
-        // Profile doesn't exist - create one
-        console.log('No profile found, creating new one');
-        const newProfile = await getProfileByUid(user!.uid);
-        if (newProfile) {
-          setProfile(newProfile);
-        } else {
-          setError('Could not create profile. Please try again.');
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load profile:', err);
-      setError('Failed to load profile: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setLoadingData(true);
+      const [userStats, favorites, prefs] = await Promise.all([
+        getUserStats(user.uid),
+        getFavorites(user.uid),
+        getUserPreferences(user.uid),
+      ]);
+
+      setStats(userStats);
+      setFavoritesCount(favorites.length);
+      setPreferences(prefs);
+    } catch (error) {
+      console.error('Error loading user data:', error);
     } finally {
-      setLoading(false);
+      setLoadingData(false);
     }
-  }
-
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !profile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <EmptyState
-            title="Could not load profile"
-            description={error || 'Your profile data could not be loaded properly.'}
-            action={{
-              label: 'Go back home',
-              onClick: () => router.push('/'),
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Ensure all nested objects exist with defaults
-  const safeProfile: UserProfile = {
-    ...profile,
-    profile: profile.profile || {
-      legalName: '',
-      updatedAt: profile.createdAt || new Date(),
-    },
-    lifestyle: profile.lifestyle || {
-      questVibe: [],
-      budgetComfort: 'moderate',
-      updatedAt: profile.createdAt || new Date(),
-    },
-    preferences: profile.preferences || {
-      updatedAt: profile.createdAt || new Date(),
-    },
-    stats: profile.stats || {
-      questsCompleted: 0,
-      currentStreak: 0,
-      favoritesCount: 0,
-      profileCompletionPercentage: 0,
-    },
   };
 
-  if (!safeProfile.profile || !safeProfile.lifestyle || !safeProfile.preferences) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <EmptyState
-            title="Invalid profile data"
-            description="Your profile data structure is invalid. Please contact support."
-            action={{
-              label: 'Go back home',
-              onClick: () => router.push('/'),
-            }}
-          />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4A295F] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
-  const incompleteFields = getIncompleteFields({
-    profile: {
-      legalName: safeProfile.profile?.legalName,
-      aboutMe: safeProfile.profile?.aboutMe,
-      photoURL: safeProfile.profile?.photoURL,
-    },
-    lifestyle: {
-      location: safeProfile.lifestyle?.location,
-      questVibe: safeProfile.lifestyle?.questVibe,
-      budgetComfort: safeProfile.lifestyle?.budgetComfort,
-    },
-    preferences: {
-      favoriteCategories: safeProfile.preferences?.favoriteCategories,
-      accessibilityNeeds: safeProfile.preferences?.accessibilityNeeds,
-    },
-  });
-
-  const completionPercentage = safeProfile?.stats?.profileCompletionPercentage || 0;
-
-  // Section render functions
-  const renderAboutSection = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <ProfileCard
-        icon="U"
-        label="Legal Name"
-        value={safeProfile.profile?.legalName}
-      />
-      <ProfileCard
-        icon="N"
-        label="Preferred Name"
-        value={safeProfile.profile?.preferredName}
-        emptyText="Not set"
-      />
-      <div className="md:col-span-2">
-        <ProfileCard
-          icon="I"
-          label="About Me"
-          value={safeProfile.profile?.aboutMe}
-          emptyText="Add your intro"
-        />
-      </div>
-      <div className="md:col-span-2">
-        <ProfileCard
-          icon="E"
-          label="Email"
-          value={safeProfile.email}
-        />
-      </div>
-    </div>
-  );
-
-  const renderLifestyleSection = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <ProfileCard
-        icon="L"
-        label="Where I Live"
-        value={safeProfile.lifestyle?.location}
-        emptyText="Not specified"
-      />
-      <ProfileCard
-        icon="S"
-        label="Education"
-        value={safeProfile.lifestyle?.education}
-        emptyText="Not specified"
-      />
-      <ProfileCard
-        icon="W"
-        label="My Work"
-        value={safeProfile.lifestyle?.work}
-        emptyText="Not specified"
-      />
-      <ProfileCard
-        icon="V"
-        label="Quest Vibe"
-        value={safeProfile.lifestyle?.questVibe}
-        emptyText="Not specified"
-      />
-      <ProfileCard
-        icon="B"
-        label="Budget Comfort"
-        value={
-          safeProfile.lifestyle?.budgetComfort === 'broke'
-            ? 'Broke (budget conscious)'
-            : safeProfile.lifestyle?.budgetComfort === 'moderate'
-              ? 'Moderate'
-              : 'Bougie (spendable)'
-        }
-      />
-      <ProfileCard
-        icon="T"
-        label="Transportation"
-        value={safeProfile.lifestyle?.transportation}
-        emptyText="Not specified"
-      />
-      <div className="md:col-span-2">
-        <ProfileCard
-          icon="D"
-          label="Dietary Preferences"
-          value={safeProfile.lifestyle?.dietaryPreferences}
-          emptyText="Not specified"
-        />
-      </div>
-    </div>
-  );
-
-  const renderPreferencesSection = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <ProfileCard
-        icon="A"
-        label="Accessibility Needs"
-        value={safeProfile.preferences?.accessibilityNeeds}
-        emptyText="None specified"
-      />
-      <ProfileCard
-        icon="T"
-        label="Time Preference"
-        value={safeProfile.preferences?.timePreference}
-        emptyText="Not specified"
-      />
-      <div className="md:col-span-2">
-        <ProfileCard
-          icon="C"
-          label="Favorite Categories"
-          value={safeProfile.preferences?.favoriteCategories}
-          emptyText="Not specified"
-        />
-      </div>
-      <ProfileCard
-        icon="E"
-        label="Energy Level"
-        value={safeProfile.preferences?.energyLevel}
-        emptyText="Not specified"
-      />
-      <ProfileCard
-        icon="S"
-        label="Social Comfort"
-        value={safeProfile.preferences?.socialComfort}
-        emptyText="Not specified"
-      />
-    </div>
-  );
-
-  const renderStatsSection = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <ProfileCard
-        icon="Q"
-        label="Quests Completed"
-        value={safeProfile.stats?.questsCompleted?.toString() || '0'}
-      />
-      <ProfileCard
-        icon="F"
-        label="Current Streak"
-        value={`${safeProfile.stats?.currentStreak || 0} days`}
-      />
-      <ProfileCard
-        icon="X"
-        label="Favorites"
-        value={safeProfile.stats?.favoritesCount?.toString() || '0'}
-      />
-    </div>
-  );
-
-  const sections: Section[] = [
-    { id: 'about', label: 'About You', render: renderAboutSection },
-    { id: 'lifestyle', label: 'My Lifestyle', render: renderLifestyleSection },
-    { id: 'preferences', label: 'My Preferences', render: renderPreferencesSection },
-    { id: 'stats', label: 'Quest Stats', render: renderStatsSection },
-  ];
-
-  const activeSection_obj = sections.find((s) => s.id === activeSection);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <button
-            onClick={() => router.push('/')}
-            className="text-[#4A295F] hover:text-[#3a1f4d] font-medium text-sm"
-          >
-            Back
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">My Profile</h1>
-          <button
-            onClick={() => router.push('/profile/edit')}
-            className="text-[#4A295F] hover:text-[#3a1f4d] font-medium text-sm"
-          >
-            Edit Profile
-          </button>
+    <div className="min-h-screen bg-white">
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/')}
+                className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition"
+              >
+                SideQuest
+              </button>
+              {user && (
+                <button
+                  onClick={() => router.push('/favorites')}
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm"
+                >
+                  Favorites
+                </button>
+              )}
+            </div>
+            <AuthButton />
+          </div>
         </div>
-      </div>
+      </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Avatar and Name Section */}
-        <div className="text-center mb-12">
-          <div className="mb-6 flex justify-center">
-            {safeProfile?.photoURL ? (
-              <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200">
-                <Image
-                  src={safeProfile.photoURL}
-                  alt={safeProfile.displayName || 'User'}
-                  fill
-                  className="object-cover"
-                  priority
-                />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {user ? (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold text-[#4A295F] mb-2">
+                My Profile
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Your quest journey and achievements
+              </p>
+            </div>
+
+            {loadingData ? (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4A295F] mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading your profile...</p>
               </div>
             ) : (
-              <div className="w-32 h-32 rounded-full bg-[#4A295F] flex items-center justify-center text-white text-4xl font-bold">
-                {safeProfile?.displayName?.charAt(0).toUpperCase() || 'U'}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* User Info Card */}
+                <div className="lg:col-span-1">
+                  <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                    <div className="text-center mb-6">
+                      {user.photoURL && (
+                        <img
+                          src={user.photoURL}
+                          alt={user.displayName || 'User'}
+                          className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-[#4A295F]"
+                        />
+                      )}
+                      <h2 className="text-2xl font-bold text-[#4A295F] mb-1">
+                        {user.displayName || 'Adventurer'}
+                      </h2>
+                      <p className="text-sm text-gray-600">{user.email}</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-[#4A295F]">
+                            {stats?.total_xp || 0}
+                          </div>
+                          <div className="text-sm text-gray-600">Total XP</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-[#4A295F]">
+                            {stats?.total_quests_completed || 0}
+                          </div>
+                          <div className="text-sm text-gray-600">Quests Completed</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-[#4A295F]">
+                            {favoritesCount}
+                          </div>
+                          <div className="text-sm text-gray-600">Favorites</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 space-y-2">
+                      <button
+                        onClick={() => router.push('/favorites')}
+                        className="w-full px-4 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
+                      >
+                        View Favorites
+                      </button>
+                      <button
+                        onClick={() => router.push('/')}
+                        className="w-full px-4 py-3 bg-purple-100 text-[#4A295F] rounded-lg hover:bg-purple-200 transition font-medium"
+                      >
+                        Discover Quests
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats & Achievements */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Achievements */}
+                  <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                    <h3 className="text-2xl font-bold text-[#4A295F] mb-4">
+                      Achievements
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className={`p-4 rounded-lg border-2 text-center transition ${
+                        (stats?.total_quests_completed || 0) >= 1
+                          ? 'bg-yellow-50 border-yellow-400 scale-105'
+                          : 'bg-gray-100 border-gray-300 opacity-50'
+                      }`}>
+                        <svg className="w-10 h-10 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <div className="text-sm font-semibold">First Quest</div>
+                        <div className="text-xs text-gray-600">Complete 1 quest</div>
+                      </div>
+
+                      <div className={`p-4 rounded-lg border-2 text-center transition ${
+                        (stats?.total_quests_completed || 0) >= 5
+                          ? 'bg-yellow-50 border-yellow-400 scale-105'
+                          : 'bg-gray-100 border-gray-300 opacity-50'
+                      }`}>
+                        <svg className="w-10 h-10 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
+                          <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z" />
+                          <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z" />
+                        </svg>
+                        <div className="text-sm font-semibold">Explorer</div>
+                        <div className="text-xs text-gray-600">Complete 5 quests</div>
+                      </div>
+
+                      <div className={`p-4 rounded-lg border-2 text-center transition ${
+                        (stats?.total_quests_completed || 0) >= 10
+                          ? 'bg-yellow-50 border-yellow-400 scale-105'
+                          : 'bg-gray-100 border-gray-300 opacity-50'
+                      }`}>
+                        <svg className="w-10 h-10 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm font-semibold">Adventurer</div>
+                        <div className="text-xs text-gray-600">Complete 10 quests</div>
+                      </div>
+
+                      <div className={`p-4 rounded-lg border-2 text-center transition ${
+                        (stats?.total_xp || 0) >= 500
+                          ? 'bg-yellow-50 border-yellow-400 scale-105'
+                          : 'bg-gray-100 border-gray-300 opacity-50'
+                      }`}>
+                        <svg className="w-10 h-10 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
+                        </svg>
+                        <div className="text-sm font-semibold">XP Master</div>
+                        <div className="text-xs text-gray-600">Earn 500 XP</div>
+                      </div>
+
+                      <div className={`p-4 rounded-lg border-2 text-center transition ${
+                        favoritesCount >= 5
+                          ? 'bg-yellow-50 border-yellow-400 scale-105'
+                          : 'bg-gray-100 border-gray-300 opacity-50'
+                      }`}>
+                        <svg className="w-10 h-10 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm font-semibold">Collector</div>
+                        <div className="text-xs text-gray-600">Save 5 favorites</div>
+                      </div>
+
+                      <div className={`p-4 rounded-lg border-2 text-center transition ${
+                        (stats?.total_quests_completed || 0) >= 20
+                          ? 'bg-yellow-50 border-yellow-400 scale-105'
+                          : 'bg-gray-100 border-gray-300 opacity-50'
+                      }`}>
+                        <svg className="w-10 h-10 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm font-semibold">Legend</div>
+                        <div className="text-xs text-gray-600">Complete 20 quests</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preferences */}
+                  {preferences && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                      <h3 className="text-2xl font-bold text-[#4A295F] mb-4">
+                        Your Preferences
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {preferences.radius && (
+                          <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                            <div className="text-sm font-semibold text-gray-600 mb-1">
+                              Search Radius
+                            </div>
+                            <div className="text-lg font-bold text-[#4A295F]">
+                              {`${preferences.radius[0]} - ${preferences.radius[1]} km`}
+                            </div>
+                          </div>
+                        )}
+
+                        {preferences.categories && preferences.categories.length > 0 && (
+                          <div className="md:col-span-2 bg-purple-50 rounded-lg p-4 border border-purple-200">
+                            <div className="text-sm font-semibold text-gray-600 mb-2">
+                              Favorite Categories
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {preferences.categories.map((cat: string) => (
+                                <span
+                                  key={cat}
+                                  className="px-3 py-1 bg-[#4A295F] text-white rounded-full text-sm font-medium"
+                                >
+                                  {cat}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Activity */}
+                  {stats?.last_completed && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                      <h3 className="text-2xl font-bold text-[#4A295F] mb-4">
+                        📅 Recent Activity
+                      </h3>
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <div className="text-sm text-gray-600">Last Quest Completed</div>
+                        <div className="text-lg font-semibold text-[#4A295F]">
+                          {new Date(stats.last_completed).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty State */}
+                  {!stats?.total_quests_completed && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-8 text-center">
+                      <svg className="w-20 h-20 mx-auto mb-6 text-[#4A295F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <h3 className="text-2xl font-bold text-[#4A295F] mb-2">
+                        Start Your Adventure!
+                      </h3>
+                      <p className="text-gray-600 mb-6">
+                        You haven't completed any quests yet. Start exploring to earn XP and unlock achievements!
+                      </p>
+                      <button
+                        onClick={() => router.push('/')}
+                        className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
+                      >
+                        Discover Quests
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{safeProfile?.displayName || 'User'}</h2>
-          {safeProfile?.profile?.preferredName && safeProfile.profile.preferredName !== safeProfile.displayName && (
-            <p className="text-sm text-gray-500 mb-4">@{safeProfile.profile.preferredName}</p>
-          )}
-          <p className="text-sm text-gray-600">
-            Joined {formatDate(safeProfile?.createdAt)}
-          </p>
-        </div>
-
-        {/* Profile Completeness Card */}
-        <ProfileCompletionCard
-          percentage={completionPercentage}
-          incompleteFields={incompleteFields}
-        />
-
-        {/* Sidebar + Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-8">
-          {/* Left Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-4">
-              <nav className="space-y-2">
-                {sections.map((section) => (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all border-l-4 ${
-                      activeSection === section.id
-                        ? 'bg-purple-50 border-l-[#4A295F] text-[#4A295F]'
-                        : 'border-l-transparent text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {section.label}
-                  </button>
-                ))}
-              </nav>
+        ) : (
+          <div className="text-center">
+            <div className="bg-white rounded-lg border border-gray-200 p-12 max-w-2xl mx-auto shadow-sm">
+              <h1 className="text-4xl font-bold text-[#4A295F] mb-4">
+                Sign in to view your profile
+              </h1>
+              <p className="text-gray-600 mb-6">
+                Track your quest completions, XP, and achievements
+              </p>
+              <AuthButton />
             </div>
           </div>
-
-          {/* Right Content Panel */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg border border-gray-200 p-8">
-              {activeSection_obj && (
-                <>
-                  <h2 className="text-2xl font-bold text-[#4A295F] mb-8">{activeSection_obj.label}</h2>
-                  {activeSection_obj.render()}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );
