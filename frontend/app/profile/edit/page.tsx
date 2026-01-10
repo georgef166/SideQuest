@@ -44,9 +44,9 @@ export default function EditProfilePage() {
     },
     preferences: {
       accessibilityNeeds: [],
-      timePreference: '',
+      timePreference: undefined,
       favoriteCategories: [],
-      energyLevel: '',
+      energyLevel: undefined,
       socialComfort: [],
     },
   });
@@ -93,9 +93,9 @@ export default function EditProfilePage() {
           },
           preferences: {
             accessibilityNeeds: profile.preferences?.accessibilityNeeds || [],
-            timePreference: profile.preferences?.timePreference || '',
+            timePreference: profile.preferences?.timePreference,
             favoriteCategories: profile.preferences?.favoriteCategories || [],
-            energyLevel: profile.preferences?.energyLevel || '',
+            energyLevel: profile.preferences?.energyLevel,
             socialComfort: profile.preferences?.socialComfort || [],
           },
         });
@@ -164,7 +164,7 @@ export default function EditProfilePage() {
       await createOrUpdateProfile(user!.uid, formData, {
         displayName: user!.displayName || undefined,
         photoURL: user!.photoURL || undefined,
-        email: user!.email,
+        email: user!.email || 'no-email',
       });
       setUnsavedChanges(false);
       showToast('success', 'Profile updated successfully');
