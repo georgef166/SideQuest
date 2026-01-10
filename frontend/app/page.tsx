@@ -481,7 +481,7 @@ export default function Home() {
                   placeholder="Search events, places, or categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all text-gray-900"
                   style={{
                     borderColor: searchQuery ? '#4A295F' : '#d1d5db',
                     backgroundColor: '#ffffff',
@@ -510,7 +510,7 @@ export default function Home() {
                         className="px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 shadow-sm"
                         style={{
                           backgroundColor: selectedCategories.includes(category) ? '#4A295F' : '#e5e7eb',
-                          color: selectedCategories.includes(category) ? 'white' : '#6b7280',
+                          color: selectedCategories.includes(category) ? 'white' : '#1f2937',
                           transform: selectedCategories.includes(category) ? 'scale(1.05)' : 'scale(1)',
                           cursor: 'pointer',
                         }}
