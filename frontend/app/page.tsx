@@ -26,6 +26,39 @@ export default function Home() {
   const [radiusRange, setRadiusRange] = useState<[number, number]>([0, 50]);
   const [debouncedRadiusRange, setDebouncedRadiusRange] = useState<[number, number]>([0, 50]);
   const [sortBy, setSortBy] = useState<string>('distance-asc');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const categories = [
+    'Sports',
+    'Entertainment',
+    'Bar',
+    'Music',
+    'Food',
+    'Active',
+    'Cultural',
+    'Arts',
+    'Shopping',
+    'Cafe',
+    'Urban',
+    'Events',
+    'Adventure',
+    'Relaxation',
+    'Social',
+    'Nightlife',
+    'Date Ideas',
+    'Hidden Gems',
+    'Trending',
+    'Local Favorites',
+    'Dessert',
+    'Live',
+    'Cheap',
+  ];
+
+  // Fuzzy search function - checks if query is contained in text (case-insensitive)
+  const fuzzyMatch = (query: string, text: string): boolean => {
+    return text.toLowerCase().includes(query.toLowerCase());
+  };
 
   // Debounce radius changes to avoid excessive API calls while dragging
   useEffect(() => {
@@ -233,8 +266,26 @@ export default function Home() {
     fetchQuests();
   }, [userLocation, user, debouncedRadiusRange]);
 
+  // Filter quests based on search and categories
+  const filteredQuests = quests.filter((quest) => {
+    const matchesSearch = 
+      !searchQuery ||
+      fuzzyMatch(searchQuery, quest.title) ||
+      fuzzyMatch(searchQuery, quest.description) ||
+      quest.tags?.some((tag) => fuzzyMatch(searchQuery, tag));
+
+    const matchesCategories =
+      selectedCategories.length === 0 ||
+      selectedCategories.some((cat) =>
+        quest.tags?.some((tag) => fuzzyMatch(cat, tag)) ||
+        fuzzyMatch(cat, quest.title)
+      );
+
+    return matchesSearch && matchesCategories;
+  });
+
   // Sort quests based on selected criteria
-  const sortedQuests = [...quests].sort((a, b) => {
+  const sortedQuests = [...filteredQuests].sort((a, b) => {
     switch (sortBy) {
       case 'name-asc':
         return a.title.localeCompare(b.title);
@@ -313,6 +364,69 @@ export default function Home() {
                   </p>
                 </div>
               )}
+
+              {/* Search Bar */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Search events, places, or categories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all"
+                  style={{
+                    borderColor: searchQuery ? '#4A295F' : '#d1d5db',
+                    backgroundColor: '#ffffff',
+                  }}
+                />
+              </div>
+
+              {/* Category Filter */}
+              <div className="mb-6">
+                <div className="overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-2 pb-2" style={{ width: 'max-content' }}>
+                    {categories.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => {
+                          setSelectedCategories(prev =>
+                            prev.includes(category)
+                              ? prev.filter(c => c !== category)
+                              : [...prev, category]
+                          );
+                        }}
+                        className="px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 shadow-sm"
+                        style={{
+                          backgroundColor: selectedCategories.includes(category) ? '#4A295F' : '#e5e7eb',
+                          color: selectedCategories.includes(category) ? 'white' : '#6b7280',
+                          transform: selectedCategories.includes(category) ? 'scale(1.05)' : 'scale(1)',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!selectedCategories.includes(category)) {
+                            e.currentTarget.style.backgroundColor = '#d1d5db';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!selectedCategories.includes(category)) {
+                            e.currentTarget.style.backgroundColor = '#e5e7eb';
+                          }
+                        }}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCategories([])}
+                    className="mt-2 text-sm hover:underline"
+                    style={{ color: '#4A295F' }}
+                  >
+                    Clear filters ({selectedCategories.length})
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Map and Search Controls */}
@@ -390,7 +504,13 @@ export default function Home() {
                   {quests.length > 0 && !loadingQuests && (
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                       <div className="text-sm text-purple-900">
-                        <strong>{quests.length} locations found</strong>
+                        <strong>{filteredQuests.length} of {quests.length} locations</strong>
+                        {(searchQuery || selectedCategories.length > 0) && (
+                          <span className="text-xs block mt-1 text-purple-700">
+                            {searchQuery && `Searching: "${searchQuery}"`}
+                            {selectedCategories.length > 0 && ` • ${selectedCategories.length} filter(s)`}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -436,7 +556,70 @@ export default function Home() {
                     {/* Activity Image */}
                     <div className="w-full h-48 bg-gray-200 overflow-hidden">
                       <img
-                        src={`https://images.unsplash.com/photo-${Math.floor(Math.random() * 10000)}-?auto=format&fit=crop&w=400&h=300`}
+                        src={(() => {
+                          // Priority 1: Use tag-based themed image
+                          const tag = quest.tags[0]?.toLowerCase() || '';
+                          const tagImageMap: Record<string, string> = {
+                            'coffee': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&h=300',
+                            'food': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&h=300',
+                            'restaurant': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&h=300',
+                            'park': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&h=300',
+                            'nature': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&h=300',
+                            'art': 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=400&h=300',
+                            'museum': 'https://images.unsplash.com/photo-1554907984-15263bfd63bd?auto=format&fit=crop&w=400&h=300',
+                            'shopping': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=400&h=300',
+                            'bar': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=400&h=300',
+                            'nightlife': 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?auto=format&fit=crop&w=400&h=300',
+                            'entertainment': 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=400&h=300',
+                            'music': 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=400&h=300',
+                            'sports': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=400&h=300',
+                            'fitness': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&h=300',
+                            'cafe': 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=400&h=300',
+                            'bakery': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&h=300',
+                            'beach': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&h=300',
+                            'hiking': 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=400&h=300',
+                            'adventure': 'https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=400&h=300',
+                          };
+                          
+                          // Check if we have a matching tag image
+                          for (const [key, url] of Object.entries(tagImageMap)) {
+                            if (tag.includes(key) || quest.title.toLowerCase().includes(key)) {
+                              return url;
+                            }
+                          }
+                          
+                          // Priority 2: Use first step's place data (if available in future)
+                          // This would require the backend to include photo_url in quest steps
+                          // const firstStepPhoto = quest.steps[0]?.photo_url;
+                          // if (firstStepPhoto) return firstStepPhoto;
+                          
+                          // Priority 3: Fallback to themed random image based on quest_id hash
+                          const questHash = quest.quest_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                          const imageIndex = questHash % 20; // Use 20 curated adventure images
+                          const fallbackImages = [
+                            'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1478860409698-8707f313ee8b?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?auto=format&fit=crop&w=400&h=300',
+                            'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&h=300',
+                          ];
+                          return fallbackImages[imageIndex];
+                        })()}
                         alt={quest.title}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
@@ -483,6 +666,26 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {!loadingQuests && !questError && filteredQuests.length === 0 && quests.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
+                <h3 className="text-xl font-semibold text-blue-800 mb-2">
+                  No activities match your filters
+                </h3>
+                <p className="text-blue-700 mb-4">
+                  Try adjusting your search or removing some category filters.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategories([]);
+                  }}
+                  className="px-6 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition"
+                >
+                  Clear all filters
+                </button>
               </div>
             )}
 
