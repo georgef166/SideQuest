@@ -64,6 +64,7 @@ class Quest(BaseModel):
     steps: List[QuestStep]
     tags: List[str]
     best_time: Optional[str] = None  # morning, afternoon, evening, night
+    distance: Optional[float] = None  # km from user location
     created_at: datetime
 
 class Favorite(BaseModel):
@@ -91,3 +92,9 @@ class NearbyEventsRequest(BaseModel):
     radius_km: float = 25.0
     start_date: Optional[str] = None
     end_date: Optional[str] = None
+
+class GenerateQuestsRequest(BaseModel):
+    location: Location
+    radius_km: float = 50.0
+    categories: Optional[List[str]] = None
+    preferences: Optional[dict] = None

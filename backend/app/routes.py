@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 from app.models import (
     Quest, Location, UserPreferences, Favorite, QuestCompletion, 
-    Place, Event, NearbyPlacesRequest, NearbyEventsRequest
+    Place, Event, NearbyPlacesRequest, NearbyEventsRequest, GenerateQuestsRequest
 )
 from app.quest_generator import QuestGenerator
 from app.google_places import GooglePlacesAPI
@@ -60,39 +60,51 @@ async def get_nearby_events(request: NearbyEventsRequest):
         raise HTTPException(status_code=500, detail=f"Error fetching events: {str(e)}")
 
 @router.post("/quests/generate", response_model=List[Quest])
-async def generate_quests(
-    location: Location,
-    radius_km: float = 5.0,
-    categories: Optional[List[str]] = None,
-    preferences: Optional[dict] = None
-):
+async def generate_quests(request: GenerateQuestsRequest):
     """
     Generate personalized quests based on location and preferences
     
     Args:
-        location: User's current lat/lng
-        radius_km: Search radius in kilometers
-        categories: Filter by categories (food, events, outdoor, etc.)
-        preferences: User preferences (budget, mood, etc.)
+        request: Request containing location, radius, categories, and preferences
     
     Returns:
         List of generated Quest objects
     """
     try:
+        print(f"\n=== QUEST GENERATION REQUEST ===")
+        print(f"Location: {request.location.lat}, {request.location.lng}")
+        print(f"Radius: {request.radius_km} km ({request.radius_km * 1000} meters)")
+        
         # Fetch nearby places
-        radius_m = radius_km * 1000
-        places = places_api.nearby_search(location, radius=radius_m)
+        radius_m = request.radius_km * 1000
+        print(f"\nFetching places from Google Places API...")
+        places = places_api.nearby_search(request.location, radius=radius_m)
+        print(f"Found {len(places)} places")
+        if places:
+            for i, place in enumerate(places[:3], 1):
+                print(f"  {i}. {place.name} - {place.category}")
         
         # Fetch nearby events
-        events = events_api.search_events(location, radius=int(radius_km))
+        print(f"\nFetching events from Ticketmaster API...")
+        events = events_api.search_events(request.location, radius=int(request.radius_km))
+        print(f"Found {len(events)} events")
+        if events:
+            for i, event in enumerate(events[:3], 1):
+                print(f"  {i}. {event.name}")
         
         # Generate quests
+        print(f"\nGenerating quests...")
         quests = quest_gen.generate_quests(
             places=places,
             events=events,
-            user_location=location,
-            preferences=preferences or {}
+            user_location=request.location,
+            preferences={**(request.preferences or {}), 'radius_km': request.radius_km}
         )
+        print(f"Generated {len(quests)} quests")
+        for i, quest in enumerate(quests, 1):
+            dist = f"{quest.distance:.1f}km" if hasattr(quest, 'distance') and quest.distance else "unknown"
+            print(f"  {i}. {quest.title} - {dist}")
+        print(f"=== END QUEST GENERATION ===\n")
         
         return quests
     

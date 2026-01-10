@@ -37,6 +37,9 @@ export default function QuestCard({ quest, onClick }: QuestCardProps) {
         <div className="flex items-center gap-4">
           <span>⏱️ {quest.estimated_time} min</span>
           <span>💰 ${quest.estimated_cost.toFixed(0)}</span>
+          {quest.distance !== undefined && (
+            <span>📍 {quest.distance.toFixed(1)} km</span>
+          )}
           <span>
             {quest.difficulty === 'low_energy' ? '😌' : 
              quest.difficulty === 'medium_energy' ? '🚶' : '🏃'} 

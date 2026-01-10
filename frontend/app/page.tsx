@@ -22,6 +22,18 @@ export default function Home() {
   const [questError, setQuestError] = useState<string>('');
   const [mapInitialized, setMapInitialized] = useState(false);
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number>(50);
+  const [debouncedRadius, setDebouncedRadius] = useState<number>(50);
+
+  // Debounce radius changes to avoid excessive API calls while dragging
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      console.log('Debounced radius updated to:', radiusKm);
+      setDebouncedRadius(radiusKm);
+    }, 500); // Wait 500ms after user stops dragging
+
+    return () => clearTimeout(timer);
+  }, [radiusKm]);
 
   // Get user's location on mount
   useEffect(() => {
@@ -186,7 +198,7 @@ export default function Home() {
     }
   }, [quests, mapInitialized, selectedQuestId]);
 
-  // Fetch quests when location is available
+  // Fetch quests when location is available or radius changes
   useEffect(() => {
     if (!userLocation || !user) return;
 
@@ -195,15 +207,15 @@ export default function Home() {
       setQuestError('');
       
       try {
-        console.log('Fetching quests for location:', userLocation);
+        console.log('Fetching quests for location:', userLocation, 'radius:', debouncedRadius, 'km');
         const response = await apiClient.post<Quest[]>('/api/quests/generate', {
           location: userLocation,
-          radius_km: 5.0,
+          radius_km: debouncedRadius,
           categories: null,
           preferences: null,
         });
         
-        console.log('Quest response:', response);
+        console.log('Quest response:', response.length, 'quests returned');
         setQuests(response);
         localStorage.setItem('currentQuests', JSON.stringify(response));
       } catch (error) {
@@ -215,7 +227,7 @@ export default function Home() {
     };
 
     fetchQuests();
-  }, [userLocation, user]);
+  }, [userLocation, user, debouncedRadius]);
 
   if (loading) {
     return (
@@ -280,13 +292,62 @@ export default function Home() {
                 <h2 className="text-3xl font-bold text-gray-800 mb-2">
                   Discover Your Next Adventure
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-4">
                   {userLocation ? (
-                    <>📍 Showing quests near you</>
+                    <>📍 Showing quests within {radiusKm}km</>
                   ) : (
                     <>🗺️ Loading your location...</>
                   )}
                 </p>
+
+                {/* Distance Slider */}
+                <div className="bg-white rounded-lg shadow p-4 mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Search Radius
+                    </label>
+                    <span className="text-sm font-semibold text-blue-600">
+                      {radiusKm} km
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="100"
+                    value={radiusKm}
+                    onChange={(e) => {
+                      const newRadius = Number(e.target.value);
+                      console.log('Slider changed to:', newRadius);
+                      setRadiusKm(newRadius);
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>1 km</span>
+                    <span>25 km</span>
+                    <span>50 km</span>
+                    <span>75 km</span>
+                    <span>100 km</span>
+                  </div>
+                  {debouncedRadius !== radiusKm && (
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Updating results...
+                    </p>
+                  )}
+                </div>
+
+                {/* Quest Statistics */}
+                {quests.length > 0 && !loadingQuests && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <div className="text-sm text-blue-800">
+                      <strong>{quests.length} quests found</strong>
+                      <div className="mt-1 text-xs">
+                        Nearest: {Math.min(...quests.map(q => q.distance || Infinity)).toFixed(1)} km • 
+                        Farthest: {Math.max(...quests.filter(q => q.distance !== undefined).map(q => q.distance || 0)).toFixed(1)} km
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {loadingQuests && (

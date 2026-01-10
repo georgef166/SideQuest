@@ -9,6 +9,7 @@ export interface Quest {
   steps: QuestStep[];
   tags: string[];
   best_time?: string;
+  distance?: number;
   created_at: string;
 }
 

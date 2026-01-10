@@ -20,22 +20,20 @@
   - ✅ Action buttons for start, save, share
 
 ### 2. Map Integration
-- [ ] **Add Google Maps component** to home screen
-  - Use `@googlemaps/js-api-loader` or next-google-maps library
-  - API key already configured in `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
-- [ ] **Show quest pins** on map at each location
-  - Use `google.maps.Marker` for each QuestStep location
-- [ ] **User location marker** (blue dot)
-  - Use `google.maps.Marker` with custom blue icon
-- [ ] **Map controls** (zoom, pan, center on user)
-- [ ] **Clickable pins** that show quest preview
-  - Add `onClick` handlers to markers, show InfoWindow or modal
-- [ ] **Sync map with quest list** (click card highlights pin, vice versa)
-  - Shared state for selected quest ID
-- [ ] **User location marker** (blue dot)
-- [ ] **Map controls** (zoom, pan, center on user)
-- [ ] **Clickable pins** that show quest preview
-- [ ] **Sync map with quest list** (click card highlights pin, vice versa)
+- [x] **Add Google Maps component** to home screen
+  - ✅ Using Google Maps JavaScript API with AdvancedMarkerElement
+- [x] **Show quest pins** on map at each location
+  - ✅ Numbered pins (1, 2, 3...) at first step of each quest
+- [x] **User location marker** (blue dot)
+  - ✅ User location shown with standard marker
+- [x] **Map controls** (zoom, pan, center on user)
+  - ✅ Standard Google Maps controls enabled
+- [x] **Clickable pins** that show quest preview
+  - ✅ Click pin to see InfoWindow with title, description, stats, and "View Details" button
+- [x] **Sync map with quest list** (click card highlights pin, vice versa)
+  - ✅ Hover over quest card highlights corresponding pin
+  - ✅ Click pin scrolls to and highlights quest card
+  - ✅ Selected quest has larger blue pin, others are indigo
 
 ### 3. Location & Radius Selection
 - [ ] **Location search bar** (autocomplete for addresses)

@@ -29,6 +29,10 @@ class GooglePlacesAPI:
         Returns:
             List of Place objects
         """
+        if not self.api_key:
+            print("ERROR: GOOGLE_MAPS_API_KEY not found in environment variables!")
+            return []
+            
         url = f"{self.base_url}/nearbysearch/json"
         
         params = {
@@ -42,13 +46,23 @@ class GooglePlacesAPI:
         if keyword:
             params["keyword"] = keyword
         
+        print(f"Calling Google Places API: {url}")
+        print(f"  Location: {params['location']}")
+        print(f"  Radius: {params['radius']} meters")
+        
         try:
             response = requests.get(url, params=params)
             response.raise_for_status()
             data = response.json()
             
+            print(f"Google Places API Response Status: {data.get('status')}")
+            if data.get('status') != 'OK':
+                print(f"Google Places API Error: {data.get('error_message', 'Unknown error')}")
+                print(f"Full response: {data}")
+                return []
+            
             places = []
-            for result in data.get("results", [])[:20]:  # Limit to 20 results
+            for result in data.get("results", []):  # Get all results
                 place = self._parse_place(result)
                 if place:
                     places.append(place)
