@@ -35,15 +35,21 @@ export default function DualRangeSlider({ min, max, value, onChange }: DualRange
                 height: '8px',
                 width: '100%',
                 borderRadius: '4px',
-                background: getTrackBackground({
-                  values: value,
-                  colors: ['#e5e7eb', '#3b82f6', '#e5e7eb'],
-                  min: min,
-                  max: max,
-                }),
+                background: '#e5e7eb',
                 alignSelf: 'center',
+                position: 'relative',
               }}
             >
+              <div
+                style={{
+                  position: 'absolute',
+                  height: '100%',
+                  borderRadius: '4px',
+                  backgroundColor: '#4A295F',
+                  left: `${((value[0] - min) / (max - min)) * 100}%`,
+                  right: `${100 - ((value[1] - min) / (max - min)) * 100}%`,
+                }}
+              />
               {children}
             </div>
           </div>
@@ -59,7 +65,7 @@ export default function DualRangeSlider({ min, max, value, onChange }: DualRange
                 height: '20px',
                 width: '20px',
                 borderRadius: '50%',
-                backgroundColor: index === 0 ? '#3b82f6' : '#6366f1',
+                backgroundColor: '#4A295F',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',

@@ -372,7 +372,7 @@ export default function Home() {
                   placeholder="Search events, places, or categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all text-gray-900 placeholder-gray-600"
                   style={{
                     borderColor: searchQuery ? '#4A295F' : '#d1d5db',
                     backgroundColor: '#ffffff',

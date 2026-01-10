@@ -21,11 +21,11 @@ export default function AuthButton() {
               className="w-8 h-8 rounded-full"
             />
           )}
-          <span className="text-sm">{user.displayName}</span>
+          <span className="text-sm font-semibold text-[#4A295F]">{user.displayName}</span>
         </div>
         <button
           onClick={() => signOut()}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          className="px-4 py-2 bg-[#4A295F] text-white rounded hover:bg-[#3a1f4d]"
         >
           Sign Out
         </button>
