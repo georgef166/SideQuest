@@ -472,13 +472,13 @@ export default function Home() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => router.push('/favorites')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm"
+                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
                   >
                     Favorites
                   </button>
                   <button
                     onClick={() => router.push('/profile')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm"
+                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
                   >
                     Profile
                   </button>
@@ -596,7 +596,7 @@ export default function Home() {
                     onClick={() => {
                       setSelectedCategories([]);
                     }}
-                    className="mt-2 text-sm hover:underline"
+                    className="mt-2 text-sm hover:underline cursor-pointer"
                     style={{ color: '#4A295F' }}
                   >
                     Clear all filters ({selectedCategories.length})
@@ -707,7 +707,7 @@ export default function Home() {
                 <p className="text-red-700">{questError}</p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
                 >
                   Try Again
                 </button>
@@ -735,7 +735,7 @@ export default function Home() {
                       <button
                         onClick={(e) => toggleFavorite(quest, e)}
                         disabled={togglingFavorite === quest.quest_id}
-                        className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md hover:scale-110 hover:bg-white transition-all duration-200 flex items-center justify-center disabled:opacity-50"
+                        className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md hover:scale-110 hover:bg-white transition-all duration-200 flex items-center justify-center disabled:opacity-50 cursor-pointer"
                         title={favoriteIds.has(quest.quest_id) ? 'Remove from favorites' : 'Add to favorites'}
                       >
                         <svg
@@ -900,7 +900,7 @@ export default function Home() {
                 </p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-6 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition"
+                  className="px-6 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition cursor-pointer"
                 >
                   Search Again
                 </button>

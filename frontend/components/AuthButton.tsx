@@ -26,7 +26,7 @@ export default function AuthButton() {
         </Link>
         <button
           onClick={() => signOut()}
-          className="px-4 py-2 bg-[#4A295F] text-white rounded hover:bg-[#3a1f4d]"
+          className="px-4 py-2 bg-[#4A295F] text-white rounded hover:bg-[#3a1f4d] cursor-pointer"
         >
           Sign Out
         </button>
@@ -37,7 +37,7 @@ export default function AuthButton() {
   return (
     <button
       onClick={() => signInWithGoogle()}
-      className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
+      className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 cursor-pointer"
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">
         <path
