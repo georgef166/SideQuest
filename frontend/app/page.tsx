@@ -414,29 +414,40 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-[#4A295F]">SideQuest</h1>
-              {user && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => router.push('/favorites')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
-                  >
-                    Favorites
-                  </button>
-                  <button
-                    onClick={() => router.push('/profile')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
-                  >
-                    Profile
-                  </button>
-                </div>
-              )}
+      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-3 items-center h-20 gap-4">
+            {/* Left: Logo */}
+            <div>
+              <h1 className="text-2xl font-bold text-[#4A295F]" style={{ fontWeight: 700, fontFamily: 'var(--font-inter)' }}>
+                SideQuest
+              </h1>
             </div>
-            <AuthButton />
+
+            {/* Center: Nav Links */}
+            {user && (
+              <div className="flex justify-center gap-8">
+                <button
+                  onClick={() => router.push('/favorites')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Favorites
+                </button>
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Profile
+                </button>
+              </div>
+            )}
+
+            {/* Right: Auth Actions */}
+            <div className="flex justify-end">
+              <AuthButton />
+            </div>
           </div>
         </div>
       </nav>

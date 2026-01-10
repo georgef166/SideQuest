@@ -64,26 +64,37 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
+      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-3 items-center h-20 gap-4">
+            {/* Left: Logo */}
+            <div>
               <button
                 onClick={() => router.push('/')}
                 className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition cursor-pointer"
+                style={{ fontWeight: 700, fontFamily: 'var(--font-inter)' }}
               >
                 SideQuest
               </button>
-              {user && (
+            </div>
+
+            {/* Center: Nav Links */}
+            {user && (
+              <div className="flex justify-center">
                 <button
                   onClick={() => router.push('/profile')}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
                 >
                   Profile
                 </button>
-              )}
+              </div>
+            )}
+
+            {/* Right: Auth Actions */}
+            <div className="flex justify-end">
+              <AuthButton />
             </div>
-            <AuthButton />
           </div>
         </div>
       </nav>

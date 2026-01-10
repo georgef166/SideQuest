@@ -77,7 +77,7 @@ export async function getProfile(uid: string) {
   return apiClient.get(`/api/profile/${uid}`);
 }
 
-export async function updateProfile(uid: string, data: unknown) {
+export async function updateProfile(uid: string, data: any) {
   return apiClient.post(`/api/profile/update`, {
     uid,
     ...data,
