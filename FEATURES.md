@@ -3,16 +3,35 @@
 ## 🔴 CRITICAL - Core Features (Must Have for MVP)
 
 ### 1. Quest Generation & Display
-- [ ] **Fetch user's current location** (browser geolocation API)
-- [ ] **Call backend `/api/quests/generate` endpoint** with location
-- [ ] **Display quest cards** on home screen in scrollable feed
-- [ ] **Quest detail page** showing all steps, map, estimated time/cost
-- [ ] **Error handling** for API failures (show fallback/hardcoded quests)
-- [ ] **Loading states** for quest fetching
+- [x] **Fetch user's current location** (browser geolocation API)
+  - ✅ Integrated into home page with fallback to McMaster location
+- [x] **Call backend `/api/quests/generate` endpoint** with location
+  - ✅ API call implemented with error handling
+- [x] **Display quest cards** on home screen in scrollable feed
+  - ✅ Quest cards render with data from API
+- [x] **Loading states** for quest fetching
+  - ✅ Spinner shown during quest generation
+- [x] **Error handling** for API failures
+  - ✅ Error messages displayed with retry option
+- [x] **Quest detail page** showing all steps, map, estimated time/cost
+  - ✅ Created `/app/quest/[id]/page.tsx` with full quest breakdown
+  - ✅ Shows all quest steps in order with locations
+  - ✅ Displays total time, cost, difficulty, tags
+  - ✅ Action buttons for start, save, share
 
 ### 2. Map Integration
 - [ ] **Add Google Maps component** to home screen
+  - Use `@googlemaps/js-api-loader` or next-google-maps library
+  - API key already configured in `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
 - [ ] **Show quest pins** on map at each location
+  - Use `google.maps.Marker` for each QuestStep location
+- [ ] **User location marker** (blue dot)
+  - Use `google.maps.Marker` with custom blue icon
+- [ ] **Map controls** (zoom, pan, center on user)
+- [ ] **Clickable pins** that show quest preview
+  - Add `onClick` handlers to markers, show InfoWindow or modal
+- [ ] **Sync map with quest list** (click card highlights pin, vice versa)
+  - Shared state for selected quest ID
 - [ ] **User location marker** (blue dot)
 - [ ] **Map controls** (zoom, pan, center on user)
 - [ ] **Clickable pins** that show quest preview
@@ -149,32 +168,54 @@
 - [ ] **API response time optimization**
 
 ### 17. Advanced Features (Hackathon Stretch Goals)
-- [ ] **Push notifications** (quest reminders, friend invites)
-- [ ] **Calendar integration** (add quest to Google Calendar)
-- [ ] **Weather integration** (suggest indoor quests if raining)
-- [ ] **Budget tracker** (total spent on quests)
-- [ ] **Photo uploads** (share quest photos)
-- [ ] **Quest reviews** (community ratings)
-- [ ] **Trending quests** (most completed this week)
+## 🎯 Hackathon Priority Order (Next Steps)
 
----
+### IMMEDIATE (Next 4-6 hours) - Make it Work
+**Goal: Working demo of core quest flow**
+1. ✅ ~~Backend endpoints~~ (DONE)
+2. ⏭️ Integrate geolocation into home page (copy from `/location-test`)
+3. ⏭️ Wire up `POST /api/quests/generate` call with user location
+4. ⏭️ Display quest cards in scrollable feed (use existing `QuestCard`)
+5. ⏭️ Add loading spinner during API call
+6. ⏭️ Quest detail page at `/quest/[id]` - show steps, total time/cost
 
-## 🎯 Hackathon Priority Order (24-36 hours)
+**Demo checkpoint: User sees personalized quests based on their location**
 
-### Hours 0-8: Foundation
-1. User location detection
-2. Quest generation API integration
-3. Display quest cards on home
-4. Basic filters (category, budget, radius)
+### NEXT (6-12 hours) - Make it Useful  
+**Goal: Filters + map for real exploration**
+7. ⏭️ Add Google Maps to home with quest pins
+8. ⏭️ Category filter chips (Food, Events, Outdoors, etc.)
+9. ⏭️ Radius slider (1km - 25km)
+10. ⏭️ Budget filter (broke/moderate/bougie)
+11. ⏭️ Refetch quests when filters change
 
-### Hours 8-16: Core UX
-5. Map integration with pins
-6. Quest detail page
-7. Favorites system (add/remove)
-8. Onboarding flow
+**Demo checkpoint: User can customize quest discovery**
 
-### Hours 16-24: Social & Polish
-9. Share quest functionality
+### THEN (12-18 hours) - Make it Personal
+**Goal: User preferences + persistence**
+12. ⏭️ Onboarding flow (mood, budget, categories, radius)
+13. ⏭️ Save preferences to Firestore
+14. ⏭️ Favorites - heart icon on cards, save to Firestore
+15. ⏭️ Favorites page showing saved quests
+
+**Demo checkpoint: User has personalized experience**
+
+### FINALLY (18-24 hours) - Make it Shareable
+**Goal: Social features + polish**
+16. ⏭️ Share quest (copy link, SMS, WhatsApp)
+17. ⏭️ Quest completion tracking (mark as done, rate)
+18. ⏭️ User profile with stats (quests completed, XP)
+19. ⏭️ McMaster fallback quests (3-5 hardcoded)
+20. ⏭️ Error handling + empty states
+21. ⏭️ UI polish (animations, loading states)
+
+**Demo checkpoint: Ready for presentation**
+
+### Stretch Goals (24+ hours)
+- Friend invites
+- Quest of the day
+- Advanced personalization
+- Push notificationstionality
 10. Quest completion flow
 11. User profile/stats
 12. McMaster fallback quests
@@ -213,12 +254,33 @@
 ---
 
 ## ✅ Already Completed
-- ✅ Firebase Authentication (Google OAuth)
-- ✅ Backend API structure (FastAPI)
-- ✅ Google Places API integration
-- ✅ Ticketmaster API integration
-- ✅ Quest generation algorithm (basic)
-- ✅ Frontend boilerplate (Next.js + Tailwind)
-- ✅ Auth UI components
-- ✅ TypeScript types
-- ✅ Environment configuration
+
+### Backend
+- ✅ FastAPI app structure (`backend/main.py`, CORS configured)
+- ✅ Pydantic models for all entities (`backend/app/models.py`)
+- ✅ Google Places API client (`backend/app/google_places.py`)
+- ✅ Ticketmaster API client (`backend/app/ticketmaster.py`)
+- ✅ Quest generation algorithm (`backend/app/quest_generator.py`)
+  - ✅ Coffee walk quests
+  - ✅ Budget food quests
+  - ✅ Template-based scoring
+- ✅ API endpoints:
+  - ✅ `POST /api/places/nearby` - fetch nearby places
+  - ✅ `POST /api/events/nearby` - fetch nearby events
+  - ✅ `POST /api/quests/generate` - generate quests from places/events
+- ✅ Swagger docs at `/docs`
+
+### Frontend
+- ✅ Next.js 16 app with App Router
+- ✅ Firebase setup (`lib/firebase.ts` - auth, Firestore exports)
+- ✅ Firebase Authentication with Google OAuth
+- ✅ `useAuth()` hook for auth state
+- ✅ `apiClient` singleton for backend calls (`lib/api.ts`)
+- ✅ TypeScript types matching backend models (`lib/types.ts`)
+- ✅ Components:
+  - ✅ `AuthButton` with sign in/out
+  - ✅ `QuestCard` (basic, may need enhancement)
+- ✅ Pages:
+  - ✅ Home page with auth check
+  - ✅ Location test page (working geolocation demo)
+- ✅ Tailwind CSS styling

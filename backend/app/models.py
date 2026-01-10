@@ -31,6 +31,7 @@ class Place(BaseModel):
     photo_url: Optional[str] = None
     distance: Optional[float] = None  # km from user
     opening_hours: Optional[dict] = None
+    location: Optional[Location] = None  # lat/lng of the place
 
 class Event(BaseModel):
     event_id: str
@@ -41,6 +42,7 @@ class Event(BaseModel):
     price_range: Optional[dict] = None
     url: Optional[str] = None
     distance: Optional[float] = None
+    location: Optional[Location] = None  # venue lat/lng
 
 class QuestStep(BaseModel):
     order: int
@@ -77,3 +79,15 @@ class QuestCompletion(BaseModel):
     completed_at: datetime
     rating: Optional[int] = None  # 1-5
     feedback: Optional[str] = None
+
+class NearbyPlacesRequest(BaseModel):
+    location: Location
+    radius_km: float = 5.0
+    place_type: Optional[str] = None
+    keyword: Optional[str] = None
+
+class NearbyEventsRequest(BaseModel):
+    location: Location
+    radius_km: float = 25.0
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None

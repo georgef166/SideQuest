@@ -62,6 +62,10 @@ class QuestGenerator:
         """
         quests = []
         
+        # If no places or events, generate fallback demo quests
+        if not places and not events:
+            return self._generate_fallback_quests(user_location)
+        
         # Generate different types of quests based on available data
         if places:
             quests.extend(self._generate_place_quests(places, preferences))
@@ -220,8 +224,9 @@ class QuestGenerator:
     
     def _score_quests(self, quests: List[Quest], preferences: dict) -> List[Quest]:
         """Score and sort quests based on user preferences"""
-        # Simple scoring for now - can be enhanced
-        def score(quest: Quest) -> float:
+        scores = []
+        
+        for quest in quests:
             s = 0.0
             
             # Budget match
@@ -238,6 +243,143 @@ class QuestGenerator:
             if mood in quest.tags:
                 s += 1.5
             
-            return s
+            scores.append((quest, s))
         
-        return sorted(quests, key=score, reverse=True)
+        # Sort by score (descending)
+        scores.sort(key=lambda x: x[1], reverse=True)
+        return [q for q, _ in scores]
+    
+    def _generate_fallback_quests(self, user_location: Location) -> List[Quest]:
+        """Generate hardcoded fallback quests for demo purposes"""
+        fallback_quests = []
+        
+        # McMaster Campus Tour
+        fallback_quests.append(Quest(
+            quest_id=str(uuid.uuid4()),
+            title="McMaster Campus Explorer",
+            description="Discover the hidden gems of McMaster University campus",
+            category="educational",
+            difficulty="low_energy",
+            estimated_time=90,
+            estimated_cost=15.0,
+            steps=[
+                QuestStep(
+                    order=1,
+                    type="place",
+                    item_id="mcmaster_library",
+                    name="Mills Memorial Library",
+                    description="Start at the iconic library building",
+                    estimated_time=20,
+                    location=Location(lat=43.2609, lng=-79.9192)
+                ),
+                QuestStep(
+                    order=2,
+                    type="place",
+                    item_id="centro",
+                    name="Centro @ McMaster Student Centre",
+                    description="Grab a coffee and snack",
+                    estimated_time=30,
+                    location=Location(lat=43.2614, lng=-79.9184)
+                ),
+                QuestStep(
+                    order=3,
+                    type="place",
+                    item_id="rock_garden",
+                    name="Rock Garden",
+                    description="Relax in the beautiful rock garden",
+                    estimated_time=40,
+                    location=Location(lat=43.2623, lng=-79.9168)
+                )
+            ],
+            tags=["campus", "educational", "relaxing", "student"],
+            best_time="afternoon",
+            created_at=datetime.now()
+        ))
+        
+        # Downtown Hamilton Adventure
+        fallback_quests.append(Quest(
+            quest_id=str(uuid.uuid4()),
+            title="Downtown Hamilton Food Tour",
+            description="Taste your way through Hamilton's best spots",
+            category="food",
+            difficulty="medium_energy",
+            estimated_time=120,
+            estimated_cost=45.0,
+            steps=[
+                QuestStep(
+                    order=1,
+                    type="place",
+                    item_id="cafe_name",
+                    name="Local Coffee Shop",
+                    description="Start with a specialty coffee",
+                    estimated_time=30,
+                    location=Location(lat=43.2567, lng=-79.8692)
+                ),
+                QuestStep(
+                    order=2,
+                    type="place",
+                    item_id="restaurant",
+                    name="James Street Restaurant",
+                    description="Lunch at a local favorite",
+                    estimated_time=60,
+                    location=Location(lat=43.2575, lng=-79.8685)
+                ),
+                QuestStep(
+                    order=3,
+                    type="place",
+                    item_id="dessert",
+                    name="Sweet Shop",
+                    description="End with something sweet",
+                    estimated_time=30,
+                    location=Location(lat=43.2580, lng=-79.8670)
+                )
+            ],
+            tags=["food", "downtown", "social", "moderate"],
+            best_time="afternoon",
+            created_at=datetime.now()
+        ))
+        
+        # Waterfront Walk
+        fallback_quests.append(Quest(
+            quest_id=str(uuid.uuid4()),
+            title="Hamilton Waterfront Sunset Walk",
+            description="Enjoy a peaceful walk along the waterfront",
+            category="outdoor",
+            difficulty="low_energy",
+            estimated_time=60,
+            estimated_cost=10.0,
+            steps=[
+                QuestStep(
+                    order=1,
+                    type="place",
+                    item_id="pier_4",
+                    name="Pier 4 Park",
+                    description="Start at the waterfront park",
+                    estimated_time=20,
+                    location=Location(lat=43.2700, lng=-79.8650)
+                ),
+                QuestStep(
+                    order=2,
+                    type="place",
+                    item_id="trail",
+                    name="Waterfront Trail",
+                    description="Walk along the scenic trail",
+                    estimated_time=30,
+                    location=Location(lat=43.2710, lng=-79.8620)
+                ),
+                QuestStep(
+                    order=3,
+                    type="place",
+                    item_id="bench",
+                    name="Lookout Point",
+                    description="Watch the sunset from the pier",
+                    estimated_time=10,
+                    location=Location(lat=43.2720, lng=-79.8600)
+                )
+            ],
+            tags=["outdoor", "relaxing", "nature", "cheap"],
+            best_time="evening",
+            created_at=datetime.now()
+        ))
+        
+        return fallback_quests

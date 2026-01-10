@@ -69,10 +69,21 @@ class TicketmasterAPI:
     def _parse_event(self, data: dict, user_location: Location) -> Optional[Event]:
         """Parse Ticketmaster API result into Event model"""
         try:
-            # Get venue info
+            # Get venue info and location
             venue = None
+            venue_location = None
             if data.get("_embedded", {}).get("venues"):
-                venue = data["_embedded"]["venues"][0].get("name")
+                venue_data = data["_embedded"]["venues"][0]
+                venue = venue_data.get("name")
+                
+                # Get venue coordinates
+                if venue_data.get("location"):
+                    try:
+                        lat = float(venue_data["location"].get("latitude"))
+                        lng = float(venue_data["location"].get("longitude"))
+                        venue_location = Location(lat=lat, lng=lng)
+                    except (ValueError, TypeError):
+                        pass
             
             # Get start time
             start_time = None
@@ -98,7 +109,8 @@ class TicketmasterAPI:
                 start_time=start_time,
                 price_range=price_range,
                 url=data.get("url"),
-                distance=None  # Calculate if venue location available
+                distance=None,
+                location=venue_location
             )
         
         except (KeyError, ValueError) as e:

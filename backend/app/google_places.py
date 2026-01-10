@@ -68,6 +68,12 @@ class GooglePlacesAPI:
                 if photo_ref:
                     photo_url = f"{self.base_url}/photo?maxwidth=400&photoreference={photo_ref}&key={self.api_key}"
             
+            # Get location from geometry
+            place_location = None
+            if result.get("geometry") and result["geometry"].get("location"):
+                loc = result["geometry"]["location"]
+                place_location = Location(lat=loc["lat"], lng=loc["lng"])
+            
             return Place(
                 place_id=result["place_id"],
                 name=result["name"],
@@ -76,7 +82,8 @@ class GooglePlacesAPI:
                 rating=result.get("rating"),
                 price_level=result.get("price_level"),
                 photo_url=photo_url,
-                distance=None  # Calculate separately if needed
+                distance=None,  # Calculate separately if needed
+                location=place_location
             )
         except KeyError as e:
             print(f"Error parsing place: {e}")

@@ -1,7 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
 from datetime import datetime
-from app.models import Quest, Location, UserPreferences, Favorite, QuestCompletion
+from app.models import (
+    Quest, Location, UserPreferences, Favorite, QuestCompletion, 
+    Place, Event, NearbyPlacesRequest, NearbyEventsRequest
+)
 from app.quest_generator import QuestGenerator
 from app.google_places import GooglePlacesAPI
 from app.ticketmaster import TicketmasterAPI
@@ -10,6 +13,51 @@ router = APIRouter()
 quest_gen = QuestGenerator()
 places_api = GooglePlacesAPI()
 events_api = TicketmasterAPI()
+
+@router.post("/places/nearby", response_model=List[Place])
+async def get_nearby_places(request: NearbyPlacesRequest):
+    """
+    Get nearby places (restaurants, cafes, parks, etc.)
+    
+    Args:
+        request: Request containing location, radius, filters
+    
+    Returns:
+        List of Place objects with details
+    """
+    try:
+        radius_m = request.radius_km * 1000
+        places = places_api.nearby_search(
+            request.location, 
+            radius=radius_m,
+            place_type=request.place_type,
+            keyword=request.keyword
+        )
+        return places
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching places: {str(e)}")
+
+@router.post("/events/nearby", response_model=List[Event])
+async def get_nearby_events(request: NearbyEventsRequest):
+    """
+    Get nearby events (concerts, sports, shows, etc.)
+    
+    Args:
+        request: Request containing location, radius, date filters
+    
+    Returns:
+        List of Event objects with details
+    """
+    try:
+        events = events_api.search_events(
+            request.location,
+            radius=int(request.radius_km),
+            start_date=request.start_date,
+            end_date=request.end_date
+        )
+        return events
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching events: {str(e)}")
 
 @router.post("/quests/generate", response_model=List[Quest])
 async def generate_quests(
@@ -49,6 +97,9 @@ async def generate_quests(
         return quests
     
     except Exception as e:
+        import traceback
+        print(f"Error generating quests: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error generating quests: {str(e)}")
 
 @router.post("/favorites", response_model=dict)
