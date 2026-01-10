@@ -2,6 +2,7 @@
 
 import { signInWithGoogle, signOut } from '@/lib/auth';
 import { useAuth } from '@/lib/useAuth';
+import Link from 'next/link';
 
 export default function AuthButton() {
   const { user, loading } = useAuth();
@@ -13,16 +14,16 @@ export default function AuthButton() {
   if (user) {
     return (
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
+        <Link href="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           {user.photoURL && (
             <img 
               src={user.photoURL} 
               alt={user.displayName || 'User'} 
-              className="w-8 h-8 rounded-full"
+              className="w-8 h-8 rounded-full cursor-pointer"
             />
           )}
-          <span className="text-sm">{user.displayName}</span>
-        </div>
+          <span className="text-sm cursor-pointer">{user.displayName}</span>
+        </Link>
         <button
           onClick={() => signOut()}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
