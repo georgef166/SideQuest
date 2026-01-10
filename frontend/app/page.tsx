@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthButton from '@/components/AuthButton';
 import QuestCard from '@/components/QuestCard';
+import DualRangeSlider from '@/components/DualRangeSlider';
 import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
 import { Quest, Location } from '@/lib/types';
@@ -22,18 +23,19 @@ export default function Home() {
   const [questError, setQuestError] = useState<string>('');
   const [mapInitialized, setMapInitialized] = useState(false);
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
-  const [radiusKm, setRadiusKm] = useState<number>(50);
-  const [debouncedRadius, setDebouncedRadius] = useState<number>(50);
+  const [radiusRange, setRadiusRange] = useState<[number, number]>([0, 50]);
+  const [debouncedRadiusRange, setDebouncedRadiusRange] = useState<[number, number]>([0, 50]);
+  const [sortBy, setSortBy] = useState<string>('distance-asc');
 
   // Debounce radius changes to avoid excessive API calls while dragging
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log('Debounced radius updated to:', radiusKm);
-      setDebouncedRadius(radiusKm);
+      console.log('Debounced radius updated - Range:', radiusRange);
+      setDebouncedRadiusRange(radiusRange);
     }, 500); // Wait 500ms after user stops dragging
 
     return () => clearTimeout(timer);
-  }, [radiusKm]);
+  }, [radiusRange]);
 
   // Get user's location on mount
   useEffect(() => {
@@ -207,12 +209,14 @@ export default function Home() {
       setQuestError('');
       
       try {
-        console.log('Fetching quests for location:', userLocation, 'radius:', debouncedRadius, 'km');
+        console.log('Fetching quests for location:', userLocation, 'range:', debouncedRadiusRange, 'km');
         const response = await apiClient.post<Quest[]>('/api/quests/generate', {
           location: userLocation,
-          radius_km: debouncedRadius,
+          radius_km: debouncedRadiusRange[1],
           categories: null,
-          preferences: null,
+          preferences: {
+            min_radius_km: debouncedRadiusRange[0],
+          },
         });
         
         console.log('Quest response:', response.length, 'quests returned');
@@ -227,13 +231,37 @@ export default function Home() {
     };
 
     fetchQuests();
-  }, [userLocation, user, debouncedRadius]);
+  }, [userLocation, user, debouncedRadiusRange]);
+
+  // Sort quests based on selected criteria
+  const sortedQuests = [...quests].sort((a, b) => {
+    switch (sortBy) {
+      case 'name-asc':
+        return a.title.localeCompare(b.title);
+      case 'name-desc':
+        return b.title.localeCompare(a.title);
+      case 'price-asc':
+        return a.estimated_cost - b.estimated_cost;
+      case 'price-desc':
+        return b.estimated_cost - a.estimated_cost;
+      case 'distance-asc':
+        return (a.distance || Infinity) - (b.distance || Infinity);
+      case 'distance-desc':
+        return (b.distance || 0) - (a.distance || 0);
+      case 'time-asc':
+        return a.estimated_time - b.estimated_time;
+      case 'time-desc':
+        return b.estimated_time - a.estimated_time;
+      default:
+        return 0;
+    }
+  });
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4A295F] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -241,12 +269,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="bg-white shadow-sm">
+    <div className="min-h-screen bg-white">
+      <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-blue-600">🎯 SideQuest</h1>
+              <h1 className="text-2xl font-bold text-[#4A295F]">SideQuest</h1>
             </div>
             <AuthButton />
           </div>
@@ -255,198 +283,258 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {user ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - Map */}
-            <div>
-              <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Location</h2>
-                
-                {userLocation && (
-                  <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <strong>📍 </strong>
-                      {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-                    </p>
-                  </div>
+          <div>
+            {/* Header Section */}
+            <div className="mb-12">
+              <h2 className="text-4xl font-bold text-[#4A295F] mb-2">
+                Discover Your Next Adventure
+              </h2>
+              <p className="text-gray-600 text-lg mb-6">
+                {userLocation ? (
+                  <>Showing activities between {radiusRange[0]}km and {radiusRange[1]}km</>
+                ) : (
+                  <>Loading your location...</>
                 )}
+              </p>
 
-                {locationError && (
-                  <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <p className="text-sm text-yellow-800">⚠️ {locationError}</p>
-                    <p className="text-xs text-yellow-700 mt-1">
-                      Using default location (McMaster University)
-                    </p>
-                  </div>
-                )}
+              {userLocation && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg inline-block">
+                  <p className="text-sm text-gray-700">
+                    <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                  </p>
+                </div>
+              )}
 
-                <div
-                  ref={mapRef}
-                  className="w-full h-[400px] rounded-lg border border-gray-300"
-                />
-              </div>
+              {locationError && (
+                <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800">{locationError}</p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    Using default location (McMaster University)
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Right Column - Quests */}
-            <div>
-              <div className="mb-6">
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                  Discover Your Next Adventure
-                </h2>
-                <p className="text-gray-600 mb-4">
-                  {userLocation ? (
-                    <>📍 Showing quests within {radiusKm}km</>
-                  ) : (
-                    <>🗺️ Loading your location...</>
-                  )}
-                </p>
+            {/* Map and Search Controls */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+              {/* Map */}
+              <div className="lg:col-span-1">
+                <div
+                  ref={mapRef}
+                  className="w-full h-[400px] rounded-lg border border-gray-200 shadow-sm"
+                />
+              </div>
 
-                {/* Distance Slider */}
-                <div className="bg-white rounded-lg shadow p-4 mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Search Radius
-                    </label>
-                    <span className="text-sm font-semibold text-blue-600">
-                      {radiusKm} km
-                    </span>
+              {/* Search Controls */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-[#4A295F] mb-4">
+                    Search Settings
+                  </h3>
+                  
+                  <div className="mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Distance Range
+                      </label>
+                      <span className="text-sm font-semibold text-[#4A295F]">
+                        {radiusRange[0]} - {radiusRange[1]} km
+                      </span>
+                    </div>
+                    
+                    <div className="px-2 py-6">
+                      <DualRangeSlider
+                        min={0}
+                        max={100}
+                        value={radiusRange}
+                        onChange={setRadiusRange}
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>0 km</span>
+                      <span>25 km</span>
+                      <span>50 km</span>
+                      <span>75 km</span>
+                      <span>100 km</span>
+                    </div>
                   </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={radiusKm}
-                    onChange={(e) => {
-                      const newRadius = Number(e.target.value);
-                      console.log('Slider changed to:', newRadius);
-                      setRadiusKm(newRadius);
-                    }}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>1 km</span>
-                    <span>25 km</span>
-                    <span>50 km</span>
-                    <span>75 km</span>
-                    <span>100 km</span>
-                  </div>
-                  {debouncedRadius !== radiusKm && (
-                    <p className="text-xs text-gray-500 mt-2 text-center">
+
+                  {JSON.stringify(debouncedRadiusRange) !== JSON.stringify(radiusRange) && (
+                    <p className="text-xs text-gray-500 text-center">
                       Updating results...
                     </p>
                   )}
-                </div>
 
-                {/* Quest Statistics */}
-                {quests.length > 0 && !loadingQuests && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                    <div className="text-sm text-blue-800">
-                      <strong>{quests.length} quests found</strong>
-                      <div className="mt-1 text-xs">
-                        Nearest: {Math.min(...quests.map(q => q.distance || Infinity)).toFixed(1)} km • 
-                        Farthest: {Math.max(...quests.filter(q => q.distance !== undefined).map(q => q.distance || 0)).toFixed(1)} km
+                  {/* Sort Dropdown */}
+                  <div className="mb-4">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">
+                      Sort By
+                    </label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A295F] text-sm bg-white"
+                    >
+                      <option value="distance-asc">Distance: Nearest First</option>
+                      <option value="distance-desc">Distance: Farthest First</option>
+                      <option value="name-asc">Name: A-Z</option>
+                      <option value="name-desc">Name: Z-A</option>
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                      <option value="time-asc">Duration: Shortest First</option>
+                      <option value="time-desc">Duration: Longest First</option>
+                    </select>
+                  </div>
+
+                  {quests.length > 0 && !loadingQuests && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                      <div className="text-sm text-purple-900">
+                        <strong>{quests.length} locations found</strong>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
+            </div>
 
-              {loadingQuests && (
-                <div className="text-center py-16">
-                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Generating personalized quests...</p>
-                </div>
-              )}
+            {/* Activities Grid */}
+            {loadingQuests && (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4A295F] mx-auto"></div>
+                <p className="mt-4 text-gray-600">Finding activities near you...</p>
+              </div>
+            )}
 
-              {questError && !loadingQuests && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-                  <p className="text-red-700">{questError}</p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            {questError && !loadingQuests && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                <p className="text-red-700">{questError}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
+            {!loadingQuests && !questError && sortedQuests.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedQuests.map((quest, index) => (
+                  <div
+                    key={quest.quest_id}
+                    id={`quest-${quest.quest_id}`}
+                    className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer border border-gray-200 ${
+                      selectedQuestId === quest.quest_id ? 'ring-2 ring-[#4A295F]' : ''
+                    }`}
+                    onMouseEnter={() => setSelectedQuestId(quest.quest_id)}
+                    onMouseLeave={() => setSelectedQuestId(null)}
+                    onClick={() => {
+                      router.push(`/quest/${quest.quest_id}`);
+                    }}
                   >
-                    Try Again
-                  </button>
-                </div>
-              )}
-
-              {!loadingQuests && !questError && quests.length > 0 && (
-                <div className="space-y-4">
-                  {quests.map((quest, index) => (
-                    <div
-                      key={quest.quest_id}
-                      id={`quest-${quest.quest_id}`}
-                      className={`transition-all ${
-                        selectedQuestId === quest.quest_id ? 'ring-2 ring-blue-500 rounded-lg' : ''
-                      }`}
-                      onMouseEnter={() => setSelectedQuestId(quest.quest_id)}
-                      onMouseLeave={() => setSelectedQuestId(null)}
-                    >
-                      <QuestCard
-                        quest={quest}
-                        onClick={() => {
-                          router.push(`/quest/${quest.quest_id}`);
+                    {/* Activity Image */}
+                    <div className="w-full h-48 bg-gray-200 overflow-hidden">
+                      <img
+                        src={`https://images.unsplash.com/photo-${Math.floor(Math.random() * 10000)}-?auto=format&fit=crop&w=400&h=300`}
+                        alt={quest.title}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=400&h=300';
                         }}
                       />
                     </div>
-                  ))}
-                </div>
-              )}
 
-              {!loadingQuests && !questError && quests.length === 0 && userLocation && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
-                  <div className="text-4xl mb-4">🗺️</div>
-                  <h3 className="text-xl font-semibold text-yellow-800 mb-2">
-                    No quests found in your area
-                  </h3>
-                  <p className="text-yellow-700 mb-4">
-                    The backend returned 0 quests. This might be because:
-                  </p>
-                  <ul className="text-sm text-yellow-700 text-left max-w-md mx-auto space-y-1">
-                    <li>• No places/events found within radius</li>
-                    <li>• Google Places API key not configured in backend</li>
-                    <li>• Ticketmaster API key not configured in backend</li>
-                    <li>• Quest generation algorithm needs more matching data</li>
-                  </ul>
-                  <p className="text-xs text-yellow-600 mt-4">
-                    Check browser console (F12) and backend logs for details
-                  </p>
-                </div>
-              )}
-            </div>
+                    {/* Activity Info */}
+                    <div className="p-5">
+                      <h3 className="text-lg font-bold text-[#4A295F] mb-2">
+                        {quest.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {quest.description}
+                      </p>
+
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {quest.tags.slice(0, 2).map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-block px-3 py-1 bg-purple-100 text-[#4A295F] text-xs font-medium rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Footer Info */}
+                      <div className="flex justify-between items-center text-sm text-gray-600 border-t border-gray-100 pt-3">
+                        <div className="flex gap-4">
+                          <span>
+                            <strong>{quest.estimated_time}</strong> min
+                          </span>
+                          <span>
+                            <strong>${Math.round(quest.estimated_cost)}</strong>
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {quest.steps.length} stops
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!loadingQuests && !questError && quests.length === 0 && userLocation && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  No activities found
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Try adjusting your search radius or check back later for new activities.
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition"
+                >
+                  Search Again
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center">
-            <div className="bg-white rounded-lg shadow-lg p-12 max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg border border-gray-200 p-12 max-w-2xl mx-auto shadow-sm">
               <div className="mb-8">
-                <div className="text-6xl mb-4">🗺️</div>
-                <h1 className="text-4xl font-bold text-gray-800 mb-4">
+                <h1 className="text-4xl font-bold text-[#4A295F] mb-4">
                   Welcome to SideQuest
                 </h1>
                 <p className="text-xl text-gray-600 mb-2">
                   Turn boredom into instant local adventures
                 </p>
                 <p className="text-gray-500">
-                  Discover personalized quests, events, and hidden gems near you
+                  Discover personalized activities and hidden gems near you
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-6 mb-8">
-                <h3 className="font-semibold text-gray-800 mb-4">What you'll get:</h3>
+              <div className="bg-purple-50 rounded-lg p-6 mb-8 border border-purple-200">
+                <h3 className="font-semibold text-[#4A295F] mb-4">What you'll get:</h3>
                 <ul className="text-left space-y-2 text-gray-600">
                   <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Personalized quest recommendations based on your mood and budget</span>
+                    <span className="text-[#4A295F] mt-1 font-bold">✓</span>
+                    <span>Personalized activity recommendations based on your preferences</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-[#4A295F] mt-1 font-bold">✓</span>
                     <span>Discover local events, restaurants, and hidden spots</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Save your favorite places and completed quests</span>
+                    <span className="text-[#4A295F] mt-1 font-bold">✓</span>
+                    <span>Save your favorite places and completed activities</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
+                    <span className="text-[#4A295F] mt-1 font-bold">✓</span>
                     <span>Share adventures with friends</span>
                   </li>
                 </ul>
@@ -457,7 +545,7 @@ export default function Home() {
               </div>
 
               <p className="text-sm text-gray-500">
-                Sign in to start your adventure 🚀
+                Sign in to start your adventure
               </p>
             </div>
           </div>

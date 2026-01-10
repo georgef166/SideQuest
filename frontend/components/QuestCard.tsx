@@ -23,9 +23,9 @@ export default function QuestCard({ quest, onClick }: QuestCardProps) {
       <p className="text-gray-600 mb-4">{quest.description}</p>
       
       <div className="flex flex-wrap gap-2 mb-4">
-        {quest.tags.map((tag) => (
+        {[...new Set(quest.tags)].map((tag, index) => (
           <span
-            key={tag}
+            key={`${tag}-${index}`}
             className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
           >
             #{tag}

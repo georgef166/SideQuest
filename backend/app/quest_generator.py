@@ -89,8 +89,9 @@ class QuestGenerator:
         
         # Filter quests within the specified radius range
         radius_km = preferences.get('radius_km')
+        min_radius_km = preferences.get('min_radius_km', 0)
         if radius_km:
-            min_distance = max(0, radius_km - 10)  # At least 10km before target, or 0
+            min_distance = max(0, min_radius_km)
             max_distance = radius_km
             quests = [q for q in quests if hasattr(q, 'distance') and q.distance and min_distance <= q.distance <= max_distance]
             print(f"Filtered to {len(quests)} quests between {min_distance} km and {max_distance} km")

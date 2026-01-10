@@ -24,3 +24,51 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Dual Range Slider Styles */
+.thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: all;
+  background: transparent;
+}
+
+.thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
+  pointer-events: all;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.thumb::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
+  pointer-events: all;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.thumb--left::-webkit-slider-thumb {
+  background: #3b82f6;
+}
+
+.thumb--left::-moz-range-thumb {
+  background: #3b82f6;
+}
+
+.thumb--right::-webkit-slider-thumb {
+  background: #6366f1;
+}
+
+.thumb--right::-moz-range-thumb {
+  background: #6366f1;
+}
