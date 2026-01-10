@@ -71,3 +71,15 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+
+// Profile API methods
+export async function getProfile(uid: string) {
+  return apiClient.get(`/api/profile/${uid}`);
+}
+
+export async function updateProfile(uid: string, data: unknown) {
+  return apiClient.post(`/api/profile/update`, {
+    uid,
+    ...data,
+  });
+}

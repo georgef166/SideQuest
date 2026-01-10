@@ -6,6 +6,7 @@ import AuthButton from '@/components/AuthButton';
 import QuestCard from '@/components/QuestCard';
 import DualRangeSlider from '@/components/DualRangeSlider';
 import { useAuth } from '@/lib/useAuth';
+import { useInitializeProfile } from '@/lib/useInitializeProfile';
 import { apiClient } from '@/lib/api';
 import { Quest, Location } from '@/lib/types';
 
@@ -59,6 +60,9 @@ export default function Home() {
   const fuzzyMatch = (query: string, text: string): boolean => {
     return text.toLowerCase().includes(query.toLowerCase());
   };
+
+  // Initialize user profile on first login
+  useInitializeProfile();
 
   // Debounce radius changes to avoid excessive API calls while dragging
   useEffect(() => {
