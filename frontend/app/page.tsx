@@ -481,7 +481,7 @@ export default function Home() {
                   placeholder="Search events, places, or categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all text-gray-900 placeholder-gray-600"
+                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all"
                   style={{
                     borderColor: searchQuery ? '#4A295F' : '#d1d5db',
                     backgroundColor: '#ffffff',
@@ -489,6 +489,7 @@ export default function Home() {
                 />
               </div>
 
+              {/* Budget Filter */}
               {/* Category Filter */}
               <div className="mb-6">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -664,8 +665,6 @@ export default function Home() {
                     onMouseEnter={() => setSelectedQuestId(quest.quest_id)}
                     onMouseLeave={() => setSelectedQuestId(null)}
                     onClick={() => {
-                      // Ensure quests are saved to localStorage before navigating
-                      localStorage.setItem('currentQuests', JSON.stringify(quests));
                       router.push(`/quest/${quest.quest_id}`);
                     }}
                   >
@@ -682,10 +681,12 @@ export default function Home() {
                           className="w-6 h-6"
                           fill={favoriteIds.has(quest.quest_id) ? '#FF385C' : 'none'}
                           stroke={favoriteIds.has(quest.quest_id) ? '#FF385C' : '#6b7280'}
-                          strokeWidth="2"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                           viewBox="0 0 24 24"
                         >
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                         </svg>
                       </button>
                       <img
@@ -820,7 +821,6 @@ export default function Home() {
                   onClick={() => {
                     setSearchQuery('');
                     setSelectedCategories([]);
-                    setBudget(null);
                   }}
                   className="px-6 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition"
                 >
