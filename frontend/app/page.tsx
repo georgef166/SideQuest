@@ -519,7 +519,7 @@ export default function Home() {
                 </h2>
 
                 {userLocation && (
-                  <div className="p-3 bg-gray-50 rounded-lg my-3">
+                  <div className="p-3 bg-gray-50 rounded-lg" style={{ marginTop: '0.5rem', marginBottom: '1.25rem' }}>
                     <p className="text-sm text-gray-700">
                       <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
                     </p>
