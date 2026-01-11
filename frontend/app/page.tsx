@@ -64,7 +64,43 @@ export default function Home() {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loadingQuests, setLoadingQuests] = useState(false);
   const [userLocation, setUserLocation] = useState<Location | null>(null);
+  const [userAddress, setUserAddress] = useState<string>('');
   const [locationError, setLocationError] = useState<string>('');
+
+  // Reverse geocoding effect
+  useEffect(() => {
+    if (!userLocation || !window.google || !window.google.maps) return;
+
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: userLocation }, (results: any, status: any) => {
+      if (status === 'OK' && results[0]) {
+        // Find locality (city), admin area (province), and postal code
+        let city = '';
+        let province = '';
+        let postalCode = '';
+
+        for (const component of results[0].address_components) {
+          const types = component.types;
+          if (types.includes('locality')) {
+            city = component.long_name;
+          } else if (types.includes('administrative_area_level_1')) {
+            province = component.short_name; // Use short name (e.g., ON)
+          } else if (types.includes('postal_code')) {
+            postalCode = component.long_name;
+          }
+        }
+
+        // Construct formatted address
+        const parts = [city, province, postalCode].filter(part => part);
+        if (parts.length > 0) {
+          setUserAddress(parts.join(', '));
+        } else {
+          // Fallback to formatted address if specific components not found
+          setUserAddress(results[0].formatted_address);
+        }
+      }
+    });
+  }, [userLocation]);
   const [questError, setQuestError] = useState<string>('');
   const [mapInitialized, setMapInitialized] = useState(false);
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
@@ -501,14 +537,12 @@ export default function Home() {
             <div className="mb-12">
               {/* Centered Title and Subtitle Section */}
               <div className="flex flex-col items-center">
-                <h2 className="page-title text-[#4A295F]" style={{ fontFamily: 'var(--font-inter)' }}>
+                <h2 className="text-4xl font-bold text-[#4A295F] mb-2">
                   Discover Your Next Adventure
                 </h2>
 
                 <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#4B5563' }}>
-                  {userLocation ? (
-                    <>Showing activities between {radiusRange[0]}km and {radiusRange[1]}km</>
-                  ) : (
+                  {(!userLocation) && (
                     <>Loading your location...</>
                   )}
                 </p>
@@ -517,7 +551,7 @@ export default function Home() {
               {userLocation && (
                 <div className="p-3 bg-gray-50 rounded-lg mx-auto block w-fit mb-4" style={{ marginTop: '1rem' }}>
                   <p className="text-sm text-gray-700">
-                    <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                    <strong>Location:</strong> {userAddress ? `${userAddress} (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})` : `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`}
                   </p>
                 </div>
               )}
@@ -678,7 +712,7 @@ export default function Home() {
                   {quests.length > 0 && !loadingQuests && (
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                       <div className="text-sm text-purple-900">
-                        <strong>{filteredQuests.length} of {quests.length} locations</strong>
+                        <strong>Showing {filteredQuests.length} out of {quests.length} activities between {radiusRange[0]}km and {radiusRange[1]}km</strong>
                         {(searchQuery || selectedCategories.length > 0) && (
                           <span className="text-xs block mt-1 text-purple-700">
                             {searchQuery && `Searching: "${searchQuery}"`}
