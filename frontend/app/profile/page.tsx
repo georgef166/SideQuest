@@ -319,7 +319,8 @@ export default function ProfilePage() {
             <div>
               <button
                 onClick={() => router.push('/')}
-                className="nav-logo hover:text-purple-900 transition cursor-pointer bg-transparent border-none padding-0"
+                className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition cursor-pointer"
+                style={{ fontWeight: 700, fontFamily: 'var(--font-inter)' }}
               >
                 SideQuest
               </button>

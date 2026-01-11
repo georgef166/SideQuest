@@ -112,30 +112,3 @@ h1, h2, h3, h4, h5, h6 {
 .thumb--right::-moz-range-thumb {
   background: #6366f1;
 }
-
-/* Navbar Logo - Consistent boldness across all pages */
-.nav-logo {
-  font-family: var(--font-inter);
-  font-weight: 800;
-  font-size: 1.5rem;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  margin: 0;
-  color: #4A295F;
-}
-
-/* Search Bar Container - TripAdvisor-style pill */
-.location-search-container {
-  width: 100%;
-  max-width: 920px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0;
-}
-
-.location-search-container input {
-  border-radius: 9999px;
-  padding-left: 20px;
-  padding-right: 20px;
-  height: 56px;
-}
