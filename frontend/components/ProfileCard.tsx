@@ -45,11 +45,11 @@ export function ProfileCard({
           <div className="flex items-start gap-4">
             <div className="text-2xl">{icon}</div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-medium text-gray-600 mb-1">{label}</h3>
+              <h3 className="text-sm font-medium text-gray-700 mb-1">{label}</h3>
               {showEmpty ? (
                 <p className="text-sm text-gray-400">{emptyText}</p>
               ) : (
-                <p className="text-sm text-gray-800 break-words">{displayValue}</p>
+                <p className="text-sm text-black break-words">{displayValue}</p>
               )}
             </div>
             {isEditable && <span className="text-gray-300 flex-shrink-0">→</span>}
@@ -124,7 +124,7 @@ interface EmptyStateProps {
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
     <div className="text-center py-12">
-      <h3 className="text-base font-medium text-gray-700 mb-2">{title}</h3>
+      <h3 className="text-base font-medium text-black mb-2">{title}</h3>
       {description && <p className="text-sm text-gray-500 mb-6">{description}</p>}
       {action && (
         <button
@@ -164,7 +164,7 @@ export function CheckboxGroup({ options, selected, onChange, disabled }: Checkbo
             disabled={disabled}
             className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
           />
-          <span className="text-sm text-gray-700">{option.label}</span>
+          <span className="text-sm text-black">{option.label}</span>
         </label>
       ))}
     </div>
@@ -191,7 +191,7 @@ export function RadioGroup({ options, selected, onChange, disabled }: RadioGroup
             disabled={disabled}
             className="w-4 h-4 text-blue-600 cursor-pointer"
           />
-          <span className="text-sm text-gray-700">{option.label}</span>
+          <span className="text-sm text-black">{option.label}</span>
         </label>
       ))}
     </div>
@@ -222,10 +222,9 @@ export function PillSelect({ options, selected, onChange, disabled }: PillSelect
           disabled={disabled}
           className={`
             px-3 py-2 rounded-full text-sm font-medium transition-colors
-            ${
-              selected.includes(option.value)
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+            ${selected.includes(option.value)
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           `}
@@ -247,7 +246,7 @@ interface FormFieldProps {
 export function FormField({ label, error, required, children }: FormFieldProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-gray-700">
+      <label className="text-sm font-medium text-black">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
