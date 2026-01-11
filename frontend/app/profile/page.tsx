@@ -365,10 +365,10 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
-              <h2 className="text-3xl font-bold text-[#4A295F] mb-2">
+              <h2 className="section-title text-[#4A295F]">
                 {user.displayName || 'Adventurer'}
               </h2>
-              <p className="text-sm text-gray-600">{user.email}</p>
+              <p className="text-sm subtitle" style={{ fontWeight: 500, color: '#666' }}>{user.email}</p>
             </div>
 
             {loadingData ? (
@@ -404,7 +404,7 @@ export default function ProfilePage() {
                   <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
                     {activeSection_obj && (
                       <>
-                        <h2 className="text-2xl font-bold text-[#4A295F] mb-6">
+                        <h2 className="section-title text-[#4A295F] mb-6">
                           {activeSection_obj.label}
                         </h2>
                         {activeSection_obj.render()}
@@ -418,10 +418,10 @@ export default function ProfilePage() {
         ) : (
           <div className="text-center">
             <div className="bg-white rounded-lg border border-gray-200 p-12 max-w-2xl mx-auto shadow-sm">
-              <h1 className="text-4xl font-bold text-[#4A295F] mb-4">
+              <h1 className="page-title text-[#4A295F] text-center">
                 Sign in to view your profile
               </h1>
-              <p className="text-gray-600 mb-6">
+              <p className="text-lg subtitle mt-4" style={{ fontWeight: 500, color: '#4B5563' }}>
                 Track your quest completions, XP, and achievements
               </p>
               <AuthButton />

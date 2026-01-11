@@ -469,7 +469,7 @@ export default function Home() {
           <div className="grid grid-cols-3 items-center h-20 gap-4">
             {/* Left: Logo */}
             <div>
-              <h1 className="text-2xl font-bold text-[#4A295F]" style={{ fontWeight: 700, fontFamily: 'var(--font-inter)' }}>
+              <h1 className="text-2xl text-[#4A295F]" style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}>
                 SideQuest
               </h1>
             </div>
@@ -483,13 +483,6 @@ export default function Home() {
                   style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
                 >
                   Favorites
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Profile
                 </button>
               </div>
             )}
@@ -506,20 +499,24 @@ export default function Home() {
         {user ? (
           <div>
             <div className="mb-12">
-              <h2 className="text-4xl font-bold text-[#4A295F] mb-2">
-                Discover Your Next Adventure
-              </h2>
-              <p className="text-black text-lg mb-6">
-                {userLocation ? (
-                  <>Showing activities between {radiusRange[0]}km and {radiusRange[1]}km</>
-                ) : (
-                  <>Loading your location...</>
-                )}
-              </p>
+              {/* Centered Title and Subtitle Section */}
+              <div className="flex flex-col items-center">
+                <h2 className="page-title text-[#4A295F]" style={{ fontFamily: 'var(--font-inter)' }}>
+                  Discover Your Next Adventure
+                </h2>
+
+                <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#4B5563' }}>
+                  {userLocation ? (
+                    <>Showing activities between {radiusRange[0]}km and {radiusRange[1]}km</>
+                  ) : (
+                    <>Loading your location...</>
+                  )}
+                </p>
+              </div>
 
               {userLocation && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg inline-block">
-                  <p className="text-sm text-black">
+                <div className="p-3 bg-gray-50 rounded-lg mx-auto block w-fit mb-4" style={{ marginTop: '1rem' }}>
+                  <p className="text-sm text-gray-700">
                     <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
                   </p>
                 </div>
