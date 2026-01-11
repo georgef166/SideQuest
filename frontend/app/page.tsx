@@ -512,19 +512,11 @@ export default function Home() {
                 <p className="text-xs text-gray-500 mt-1">Start typing to search for a new location. Powered by Google Places.</p>
               </div>
 
-              {/* Centered Title, Location Pill, and Subtitle Section */}
+              {/* Centered Title and Subtitle Section */}
               <div className="flex flex-col items-center">
                 <h2 className="page-title text-[#4A295F]" style={{ fontFamily: 'var(--font-inter)' }}>
                   Discover Your Next Adventure
                 </h2>
-
-                {userLocation && (
-                  <div className="p-3 bg-gray-50 rounded-lg" style={{ marginTop: '0.5rem', marginBottom: '1.25rem' }}>
-                    <p className="text-sm text-gray-700">
-                      <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-                    </p>
-                  </div>
-                )}
 
                 <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#4B5563' }}>
                   {userLocation ? (
@@ -534,6 +526,14 @@ export default function Home() {
                   )}
                 </p>
               </div>
+
+              {userLocation && (
+                <div className="p-3 bg-gray-50 rounded-lg mx-auto block w-fit mb-4">
+                  <p className="text-sm text-gray-700">
+                    <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                  </p>
+                </div>
+              )}
 
               {locationError && (
                 <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
