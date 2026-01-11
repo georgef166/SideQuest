@@ -22,7 +22,7 @@ export default function QuestsPage() {
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [completing, setCompleting] = useState(false);
-
+  //tee
   useEffect(() => {
     if (!loading && !user) {
       router.push('/');
