@@ -21,6 +21,7 @@ export interface QuestStep {
   description?: string;
   estimated_time?: number;
   location: Location;
+  photo_url?: string;
 }
 
 export interface Location {
