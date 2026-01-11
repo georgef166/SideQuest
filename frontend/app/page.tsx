@@ -885,9 +885,9 @@ export default function Home() {
 
               <EmailPasswordAuth />
 
-              <p className="text-sm text-gray-500 mt-6">
+              <div className="text-sm text-gray-500 mt-6">
                 By signing in, you agree to our Terms of Service and Privacy Policy
-              </p>
+              </div>
             </div>
           </div>
         )}

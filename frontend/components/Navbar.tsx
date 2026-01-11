@@ -27,12 +27,12 @@ export default function Navbar() {
                             onClick={() => router.push('/')}
                             className="flex items-center gap-2 hover:opacity-80 transition bg-transparent border-none cursor-pointer"
                         >
-                            <img 
-                                src="/sideQuestNoBg.png" 
-                                alt="SideQuest Logo" 
+                            <img
+                                src="/sideQuestNoBg.png"
+                                alt="SideQuest Logo"
                                 className="h-8 w-8 object-contain"
                             />
-                            <span 
+                            <span
                                 className="text-2xl text-[#4A295F] hover:text-purple-900 transition"
                                 style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}
                             >
@@ -54,8 +54,8 @@ export default function Navbar() {
                                     key={link.path}
                                     onClick={() => router.push(link.path)}
                                     className={`transition text-sm font-semibold cursor-pointer border-b-2 h-full flex items-center ${isActive
-                                            ? 'text-[#4A295F] border-[#4A295F]'
-                                            : 'text-black border-transparent hover:text-[#4A295F] hover:border-[#4A295F]'
+                                        ? 'text-[#4A295F] border-[#4A295F]'
+                                        : 'text-black border-transparent hover:text-[#4A295F] hover:border-[#4A295F]'
                                         }`}
                                     style={{
                                         fontWeight: 600,
@@ -74,7 +74,7 @@ export default function Navbar() {
 
                     {/* Right: Auth Actions */}
                     <div className="flex justify-end">
-                        <AuthButton />
+                        {(user || pathname !== '/') && <AuthButton />}
                     </div>
                 </div>
             </div>
