@@ -511,10 +511,10 @@ export default function Home() {
                 />
                 <p className="text-xs text-gray-500 mt-1">Start typing to search for a new location. Powered by Google Places.</p>
               </div>
-              <h2 className="text-4xl font-bold text-[#4A295F] mb-2 text-center" style={{ fontWeight: 800 }}>
+              <h2 className="text-4xl text-[#4A295F] mb-2 text-center" style={{ fontWeight: 800 }}>
                 Discover Your Next Adventure
               </h2>
-              <p className="text-gray-600 text-lg mb-6">
+              <p className="text-gray-600 text-lg mb-6 text-center">
                 {userLocation ? (
                   <>Showing activities between {radiusRange[0]}km and {radiusRange[1]}km</>
                 ) : (
@@ -523,7 +523,7 @@ export default function Home() {
               </p>
 
               {userLocation && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg inline-block">
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg mx-auto block w-fit">
                   <p className="text-sm text-gray-700">
                     <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
                   </p>
