@@ -27,8 +27,8 @@ function ProfilePageContent() {
   const [preferences, setPreferences] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingData, setLoadingData] = useState(true);
-  const [activeSection, setActiveSection] = useState<SectionId | null>(null);
-  
+  const [activeSection, setActiveSection] = useState<SectionId>('overview');
+
   // Check if we're in "section-only" mode (came from dropdown menu)
   const sectionFromQuery = searchParams?.get('section') as SectionId | null;
   const isSectionMode = sectionFromQuery !== null;
@@ -504,22 +504,22 @@ function ProfilePageContent() {
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Left Sidebar - Navigation */}
                 <div className="lg:col-span-1">
-                    <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                      <nav className="space-y-2">
-                        {sections.map((section) => (
-                          <button
-                            key={section.id}
-                            onClick={() => setActiveSection(section.id)}
-                            className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all border-l-4 cursor-pointer ${activeSection === section.id
-                              ? 'bg-purple-50 border-l-[#4A295F] text-[#4A295F]'
-                              : 'border-l-transparent text-gray-700 hover:bg-gray-50'
-                              }`}
-                          >
-                            {section.label}
-                          </button>
-                        ))}
-                      </nav>
-                    </div>
+                  <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                    <nav className="space-y-2">
+                      {sections.map((section) => (
+                        <button
+                          key={section.id}
+                          onClick={() => setActiveSection(section.id)}
+                          className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all border-l-4 cursor-pointer ${activeSection === section.id
+                            ? 'bg-purple-50 border-l-[#4A295F] text-[#4A295F]'
+                            : 'border-l-transparent text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                          {section.label}
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
                 </div>
 
                 {/* Right Content Panel */}
