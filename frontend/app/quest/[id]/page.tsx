@@ -34,8 +34,6 @@ export default function QuestDetailPage() {
       const quests: Quest[] = JSON.parse(storedQuests);
       const foundQuest = quests.find(q => q.quest_id === questId);
       setQuest(foundQuest || null);
-
-
     }
     setLoading(false);
 
@@ -446,8 +444,6 @@ export default function QuestDetailPage() {
               </div>
             </div>
           )}
-
-
 
           <div className="mt-8 text-center border-t pt-6">
             <button
