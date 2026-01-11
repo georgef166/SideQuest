@@ -483,13 +483,6 @@ export default function Home() {
                 >
                   Favorites
                 </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Profile
-                </button>
               </div>
             )}
 
@@ -518,7 +511,7 @@ export default function Home() {
                 />
                 <p className="text-xs text-gray-500 mt-1">Start typing to search for a new location. Powered by Google Places.</p>
               </div>
-              <h2 className="text-4xl font-bold text-[#4A295F] mb-2">
+              <h2 className="text-4xl font-bold text-[#4A295F] mb-2 text-center" style={{ fontWeight: 800 }}>
                 Discover Your Next Adventure
               </h2>
               <p className="text-gray-600 text-lg mb-6">
