@@ -53,6 +53,7 @@ class QuestStep(BaseModel):
     description: Optional[str] = None
     estimated_time: Optional[int] = None  # minutes
     location: Location
+    photo_url: Optional[str] = None  # URL to place/event photo
 
 class Quest(BaseModel):
     quest_id: str

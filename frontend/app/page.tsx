@@ -690,7 +690,13 @@ export default function Home() {
                       </button>
                       <img
                         src={(() => {
-                          // Priority 1: Use tag-based themed image
+                          // Priority 1: Use actual place photo from first step if available
+                          const firstStepPhoto = quest.steps[0]?.photo_url;
+                          if (firstStepPhoto) {
+                            return firstStepPhoto;
+                          }
+
+                          // Priority 2: Use tag-based themed image as fallback
                           const tag = quest.tags[0]?.toLowerCase() || '';
                           const tagImageMap: Record<string, string> = {
                             'coffee': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&h=300',
@@ -720,11 +726,6 @@ export default function Home() {
                               return url;
                             }
                           }
-
-                          // Priority 2: Use first step's place data (if available in future)
-                          // This would require the backend to include photo_url in quest steps
-                          // const firstStepPhoto = quest.steps[0]?.photo_url;
-                          // if (firstStepPhoto) return firstStepPhoto;
 
                           // Priority 3: Fallback to themed random image based on quest_id hash
                           const questHash = quest.quest_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);

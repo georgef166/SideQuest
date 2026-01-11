@@ -306,7 +306,8 @@ class QuestGenerator:
                     name=cafe.name,
                     description="Grab your favorite coffee",
                     estimated_time=15,
-                    location=cafe.location or Location(lat=0, lng=0)
+                    location=cafe.location or Location(lat=0, lng=0),
+                    photo_url=cafe.photo_url
                 ),
                 QuestStep(
                     order=2,
@@ -315,7 +316,8 @@ class QuestGenerator:
                     name=park.name,
                     description="Enjoy a relaxing walk",
                     estimated_time=45,
-                    location=park.location or Location(lat=0, lng=0)
+                    location=park.location or Location(lat=0, lng=0),
+                    photo_url=park.photo_url
                 )
             ],
             tags=["Cafe", "Active", "Relaxation", "Urban"],
@@ -343,7 +345,8 @@ class QuestGenerator:
                     name=place.name,
                     description=f"Stop {i+1}",
                     estimated_time=45,
-                    location=place.location or Location(lat=0, lng=0)
+                    location=place.location or Location(lat=0, lng=0),
+                    photo_url=place.photo_url
                 ) for i, place in enumerate(places)
             ],
             tags=["Cheap", "Food", "Social"],
@@ -378,7 +381,8 @@ class QuestGenerator:
                     name=place.name,
                     description=f"Try the specialties at {place.name}",
                     estimated_time=45,
-                    location=place.location or Location(lat=0, lng=0)
+                    location=place.location or Location(lat=0, lng=0),
+                    photo_url=place.photo_url
                 ) for i, place in enumerate(places)
             ],
             tags=tags,
@@ -406,7 +410,8 @@ class QuestGenerator:
                     name=shop.name,
                     description="Browse and shop",
                     estimated_time=45,
-                    location=shop.location or Location(lat=0, lng=0)
+                    location=shop.location or Location(lat=0, lng=0),
+                    photo_url=shop.photo_url
                 ),
                 QuestStep(
                     order=2,
@@ -415,7 +420,8 @@ class QuestGenerator:
                     name=cafe.name,
                     description="Grab a coffee and relax",
                     estimated_time=30,
-                    location=cafe.location or Location(lat=0, lng=0)
+                    location=cafe.location or Location(lat=0, lng=0),
+                    photo_url=cafe.photo_url
                 )
             ],
             tags=["Shopping", "Cafe", "Relaxation"],
@@ -443,7 +449,8 @@ class QuestGenerator:
                     name=restaurant.name,
                     description="Enjoy dinner",
                     estimated_time=75,
-                    location=restaurant.location or Location(lat=0, lng=0)
+                    location=restaurant.location or Location(lat=0, lng=0),
+                    photo_url=restaurant.photo_url
                 ),
                 QuestStep(
                     order=2,
@@ -452,7 +459,8 @@ class QuestGenerator:
                     name=bar.name,
                     description="Drinks and good vibes",
                     estimated_time=75,
-                    location=bar.location or Location(lat=0, lng=0)
+                    location=bar.location or Location(lat=0, lng=0),
+                    photo_url=bar.photo_url
                 )
             ],
             tags=["Nightlife", "Social", "Food", "Bar"],
@@ -487,7 +495,8 @@ class QuestGenerator:
                     name=place.name,
                     description=f"Visit {place.name}",
                     estimated_time=40,
-                    location=place.location or Location(lat=0, lng=0)
+                    location=place.location or Location(lat=0, lng=0),
+                    photo_url=place.photo_url
                 ) for i, place in enumerate(places)
             ],
             tags=tags,
@@ -557,7 +566,8 @@ class QuestGenerator:
                     name=food_place.name,
                     description="Pre-event dinner",
                     estimated_time=60,
-                    location=food_place.location or Location(lat=0, lng=0)
+                    location=food_place.location or Location(lat=0, lng=0),
+                    photo_url=food_place.photo_url
                 ),
                 QuestStep(
                     order=2,
