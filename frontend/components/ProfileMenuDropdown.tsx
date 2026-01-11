@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { signOut } from '@/lib/auth';
 
 interface MenuItemConfig {
   label: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
 }
 
 const PROFILE_MENU_ITEMS: MenuItemConfig[] = [
@@ -15,6 +17,7 @@ const PROFILE_MENU_ITEMS: MenuItemConfig[] = [
   { label: 'Achievements', href: '/profile?section=achievements' },
   { label: 'Preferences', href: '/profile?section=preferences' },
   { label: 'Stats', href: '/profile?section=stats' },
+  { label: 'Sign Out', onClick: () => signOut() },
 ];
 
 interface ProfileMenuDropdownProps {
@@ -176,29 +179,50 @@ function ProfileMenuDropdownContent({ photoURL, displayName }: ProfileMenuDropdo
       {isOpen && (
         <div
           role="menu"
-          className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+          className="absolute left-0 top-full mt-2 w-44 -ml-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
           style={{
             animation: 'dropdownFadeIn 0.15s ease-out',
           }}
         >
           {PROFILE_MENU_ITEMS.map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              ref={(el) => {
-                if (el) menuItemsRef.current[index] = el;
-              }}
-              role="menuitem"
-              onClick={() => handleMenuItemClick(index)}
-              className={`block w-full text-left px-4 py-3 text-sm font-medium transition-colors focus:outline-none ${
-                (focusedIndex === index || selectedIndex === index)
-                  ? 'bg-purple-50 text-[#4A295F] border-l-4 border-l-[#4A295F]'
-                  : 'text-gray-700 hover:bg-gray-50 border-l-4 border-l-transparent'
-              }`}
-              tabIndex={isOpen ? 0 : -1}
-            >
-              {item.label}
-            </Link>
+            item.href ? (
+              <Link
+                key={index}
+                href={item.href}
+                ref={(el) => {
+                  if (el) menuItemsRef.current[index] = el;
+                }}
+                role="menuitem"
+                onClick={() => handleMenuItemClick(index)}
+                className={`block w-full text-left px-3 py-2.5 font-semibold transition-colors focus:outline-none ${
+                  (focusedIndex === index || selectedIndex === index)
+                    ? 'bg-purple-50 text-[#4A295F] border-l-4 border-l-[#4A295F]'
+                    : 'text-gray-700 hover:bg-gray-50 border-l-4 border-l-transparent'
+                }`}
+                style={{ fontSize: '14px' }}
+                tabIndex={isOpen ? 0 : -1}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <button
+                key={index}
+                role="menuitem"
+                onClick={() => {
+                  item.onClick?.();
+                  handleMenuItemClick(index);
+                }}
+                className={`w-full text-left px-3 py-2.5 font-semibold transition-colors focus:outline-none ${
+                  (focusedIndex === index || selectedIndex === index)
+                    ? 'bg-purple-50 text-[#4A295F] border-l-4 border-l-[#4A295F]'
+                    : 'text-gray-700 hover:bg-gray-50 border-l-4 border-l-transparent'
+                }`}
+                style={{ fontSize: '14px' }}
+                tabIndex={isOpen ? 0 : -1}
+              >
+                {item.label}
+              </button>
+            )
           ))}
         </div>
       )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { signInWithGoogle, signOut } from '@/lib/auth';
+import { signInWithGoogle } from '@/lib/auth';
 import { useAuth } from '@/lib/useAuth';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
 
@@ -14,20 +14,11 @@ export default function AuthButton() {
   if (user) {
     return (
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <ProfileMenuDropdown 
-            photoURL={user.photoURL || undefined} 
-            displayName={user.displayName || 'User'} 
-          />
-          <span className="text-sm font-semibold text-[#4A295F]" style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}>{user.displayName}</span>
-        </div>
-        <button
-          onClick={() => signOut()}
-          className="px-4 py-2 bg-[#4A295F] text-white rounded hover:bg-[#3a1f4d] cursor-pointer"
-          style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}
-        >
-          Sign Out
-        </button>
+        <ProfileMenuDropdown 
+          photoURL={user.photoURL || undefined} 
+          displayName={user.displayName || 'User'} 
+        />
+        <span className="text-sm font-semibold text-[#4A295F]" style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}>{user.displayName}</span>
       </div>
     );
   }
