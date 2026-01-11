@@ -44,15 +44,15 @@ import { saveUserPreferences, getUserPreferences } from '@/lib/preferences';
 import { useToast } from '@/lib/toast';
 
 export default function Home() {
-    const locationInputRef = useRef<HTMLInputElement | null>(null);
-    // Attach Google Places Autocomplete to location input
-    usePlacesAutocomplete(locationInputRef, (loc) => {
-      setUserLocation(loc);
-      setLocationError('');
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.setCenter(loc);
-      }
-    });
+  const locationInputRef = useRef<HTMLInputElement | null>(null);
+  // Attach Google Places Autocomplete to location input
+  usePlacesAutocomplete(locationInputRef, (loc) => {
+    setUserLocation(loc);
+    setLocationError('');
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setCenter(loc);
+    }
+  });
   const router = useRouter();
   const { user, loading } = useAuth();
   const { showToast } = useToast();
@@ -138,7 +138,7 @@ export default function Home() {
   // Save preferences when they change
   useEffect(() => {
     if (!user) return;
-    
+
     const savePrefs = async () => {
       try {
         await saveUserPreferences(user.uid, {
@@ -167,7 +167,7 @@ export default function Home() {
 
     try {
       setTogglingFavorite(quest.quest_id);
-      
+
       if (favoriteIds.has(quest.quest_id)) {
         await removeFromFavorites(user.uid, quest.quest_id);
         setFavoriteIds(prev => {
@@ -317,7 +317,7 @@ export default function Home() {
         // Add click listener to show quest preview
         marker.addListener('click', () => {
           setSelectedQuestId(quest.quest_id);
-          
+
           // Scroll to quest card
           const questElement = document.getElementById(`quest-${quest.quest_id}`);
           if (questElement) {
@@ -382,7 +382,7 @@ export default function Home() {
     const fetchQuests = async () => {
       setLoadingQuests(true);
       setQuestError('');
-      
+
       try {
         console.log('Fetching quests for location:', userLocation, 'range:', debouncedRadiusRange, 'km');
         const response = await apiClient.post<Quest[]>('/api/quests/generate', {
@@ -393,7 +393,7 @@ export default function Home() {
             min_radius_km: debouncedRadiusRange[0],
           },
         });
-        
+
         console.log('Quest response:', response.length, 'quests returned');
         setQuests(response);
         localStorage.setItem('currentQuests', JSON.stringify(response));
@@ -410,7 +410,7 @@ export default function Home() {
 
   // Filter quests based on search and categories
   const filteredQuests = quests.filter((quest) => {
-    const matchesSearch = 
+    const matchesSearch =
       !searchQuery ||
       fuzzyMatch(searchQuery, quest.title) ||
       fuzzyMatch(searchQuery, quest.description) ||
@@ -497,7 +497,6 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {user ? (
           <div>
-            {/* Header Section */}
             <div className="mb-12">
               {/* Location Search Bar (Google Places Autocomplete) */}
               <div className="mb-4">
@@ -559,10 +558,9 @@ export default function Home() {
                 />
               </div>
 
-              {/* Budget Filter */}
               {/* Category Filter */}
               <div className="mb-6">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label className="text-sm font-medium text-black mb-2 block">
                   Categories
                 </label>
                 <div className="overflow-x-auto scrollbar-hide">
@@ -630,7 +628,7 @@ export default function Home() {
                   <h3 className="text-lg font-semibold text-[#4A295F] mb-4">
                     Search Settings
                   </h3>
-                  
+
                   <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
                       <label className="text-sm font-medium text-gray-700">
@@ -640,7 +638,7 @@ export default function Home() {
                         {radiusRange[0]} - {radiusRange[1]} km
                       </span>
                     </div>
-                    
+
                     <div className="px-2 py-6">
                       <DualRangeSlider
                         min={0}
@@ -649,7 +647,7 @@ export default function Home() {
                         onChange={setRadiusRange}
                       />
                     </div>
-                    
+
                     <div className="flex justify-between text-xs text-gray-500 mt-1">
                       <span>0 km</span>
                       <span>25 km</span>
@@ -729,9 +727,8 @@ export default function Home() {
                   <div
                     key={quest.quest_id}
                     id={`quest-${quest.quest_id}`}
-                    className={`bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 border border-gray-200 hover:shadow-2xl hover:-translate-y-1 relative group ${
-                      selectedQuestId === quest.quest_id ? 'ring-2 ring-[#4A295F] shadow-xl' : ''
-                    }`}
+                    className={`bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 border border-gray-200 hover:shadow-2xl hover:-translate-y-1 relative group ${selectedQuestId === quest.quest_id ? 'ring-2 ring-[#4A295F] shadow-xl' : ''
+                      }`}
                     onMouseEnter={() => setSelectedQuestId(quest.quest_id)}
                     onMouseLeave={() => setSelectedQuestId(null)}
                     onClick={() => {
@@ -784,19 +781,19 @@ export default function Home() {
                             'hiking': 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=400&h=300',
                             'adventure': 'https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=400&h=300',
                           };
-                          
+
                           // Check if we have a matching tag image
                           for (const [key, url] of Object.entries(tagImageMap)) {
                             if (tag.includes(key) || quest.title.toLowerCase().includes(key)) {
                               return url;
                             }
                           }
-                          
+
                           // Priority 2: Use first step's place data (if available in future)
                           // This would require the backend to include photo_url in quest steps
                           // const firstStepPhoto = quest.steps[0]?.photo_url;
                           // if (firstStepPhoto) return firstStepPhoto;
-                          
+
                           // Priority 3: Fallback to themed random image based on quest_id hash
                           const questHash = quest.quest_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                           const imageIndex = questHash % 20; // Use 20 curated adventure images
@@ -837,7 +834,7 @@ export default function Home() {
                       <h3 className="text-lg font-bold text-[#4A295F] mb-2">
                         {quest.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      <p className="text-sm text-black mb-4 line-clamp-2">
                         {quest.description}
                       </p>
 
@@ -854,7 +851,7 @@ export default function Home() {
                       </div>
 
                       {/* Footer Info */}
-                      <div className="flex justify-between items-center text-sm text-gray-600 border-t border-gray-100 pt-3">
+                      <div className="flex justify-between items-center text-sm text-black border-t border-gray-100 pt-3">
                         <div className="flex gap-4">
                           <span className="flex items-center gap-1">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
