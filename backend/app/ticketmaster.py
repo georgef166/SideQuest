@@ -106,6 +106,7 @@ class TicketmasterAPI:
                 name=data["name"],
                 category=data.get("classifications", [{}])[0].get("segment", {}).get("name", "Event"),
                 venue=venue,
+                description=data.get("description") or data.get("info"),
                 start_time=start_time,
                 price_range=price_range,
                 url=data.get("url"),

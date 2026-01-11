@@ -485,14 +485,23 @@ class QuestGenerator:
     
     def _create_standalone_event_quest(self, event: Event) -> Quest:
         """Create a standalone event quest"""
+        
+        # Enrich with Gemini
+        from app.gemini_service import gemini_service
+        enriched = gemini_service.enrich_quest_item(
+            name=event.name,
+            description=event.description or f"Event at {event.venue}",
+            context="Standalone event quest"
+        )
+        
         return Quest(
             quest_id=str(uuid.uuid4()),
             title=event.name,
             description=f"Attend {event.name}" + (f" at {event.venue}" if event.venue else ""),
-            category="event",
-            difficulty="medium_energy",
-            estimated_time=120,
-            estimated_cost=30.0,
+            category=enriched.get('categories', ['event'])[0],
+            difficulty=enriched.get('difficulty', 'medium_energy'),
+            estimated_time=enriched.get('estimated_time', 120),
+            estimated_cost=float(enriched.get('estimated_cost', 30.0)),
             steps=[
                 QuestStep(
                     order=1,
@@ -500,25 +509,34 @@ class QuestGenerator:
                     item_id=event.event_id,
                     name=event.name,
                     description=f"Enjoy the event",
-                    estimated_time=120,
+                    estimated_time=enriched.get('estimated_time', 120),
                     location=event.location or Location(lat=0, lng=0)
                 )
             ],
-            tags=["Events", "Entertainment", "Live"],
+            tags=enriched.get('categories', ["Events", "Entertainment", "Live"]),
             best_time="evening",
             created_at=datetime.now()
         )
     
     def _create_event_quest(self, event: Event, food_place: Place) -> Quest:
         """Create an event-based quest"""
+        
+        # Enrich event with Gemini
+        from app.gemini_service import gemini_service
+        enriched_event = gemini_service.enrich_quest_item(
+            name=event.name,
+            description=event.description or f"Event at {event.venue}",
+            context="Main event of the night"
+        )
+        
         return Quest(
             quest_id=str(uuid.uuid4()),
             title=f"{event.name} Night Out",
             description=f"Dinner at {food_place.name} before {event.name}",
             category="social",
-            difficulty="medium_energy",
-            estimated_time=180,
-            estimated_cost=50.0,
+            difficulty=enriched_event.get('difficulty', 'medium_energy'),
+            estimated_time=enriched_event.get('estimated_time', 120) + 60,
+            estimated_cost=float(enriched_event.get('estimated_cost', 50.0)) + float(food_place.price_level or 2) * 20,
             steps=[
                 QuestStep(
                     order=1,
@@ -535,11 +553,11 @@ class QuestGenerator:
                     item_id=event.event_id,
                     name=event.name,
                     description="Main event",
-                    estimated_time=120,
+                    estimated_time=enriched_event.get('estimated_time', 120),
                     location=event.location or Location(lat=0, lng=0)
                 )
             ],
-            tags=["Events", "Nightlife", "Social", "Food"],
+            tags=enriched_event.get('categories', ["Events", "Nightlife"]) + ["Social", "Food"],
             best_time="evening",
             created_at=datetime.now()
         )

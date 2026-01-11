@@ -38,6 +38,7 @@ class Event(BaseModel):
     name: str
     category: str
     venue: Optional[str] = None
+    description: Optional[str] = None
     start_time: Optional[datetime] = None
     price_range: Optional[dict] = None
     url: Optional[str] = None

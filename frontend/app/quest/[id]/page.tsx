@@ -186,6 +186,23 @@ export default function QuestDetailPage() {
   const totalTime = quest.estimated_time;
   const totalCost = quest.estimated_cost;
 
+  const handleViewOnMap = () => {
+    if (!quest || !quest.steps.length) return;
+
+    // Construct Google Maps URL with waypoints
+    const origin = 'Current Location';
+    const destination = `${quest.steps[quest.steps.length - 1].location.lat},${quest.steps[quest.steps.length - 1].location.lng}`;
+
+    let waypoints = '';
+    if (quest.steps.length > 1) {
+      const intermediateSteps = quest.steps.slice(0, -1);
+      waypoints = '&waypoints=' + intermediateSteps.map(step => `${step.location.lat},${step.location.lng}`).join('|');
+    }
+
+    const mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${destination}${waypoints}`;
+    window.open(mapUrl, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -311,7 +328,7 @@ export default function QuestDetailPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-lg p-6 relative">
           <div className="flex gap-4">
             <button
               onClick={handleCompleteQuest}
@@ -326,26 +343,42 @@ export default function QuestDetailPage() {
             <button
               onClick={toggleFavorite}
               disabled={togglingFavorite || !user}
-              className="flex-1 px-6 py-4 font-bold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{
-                backgroundColor: isFavorite ? '#FF385C' : '#4A295F',
-                color: 'white'
-              }}
+              className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" fill={isFavorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill={isFavorite ? 'white' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-              {isFavorite ? 'Remove from Favorites' : 'Save to Favorites'}
+              {isFavorite ? 'Saved to Favorites' : 'Save to Favorites'}
             </button>
-            <button
-              onClick={() => setShowShareMenu(!showShareMenu)}
-              className="flex-1 px-6 py-4 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              Share Quest
-            </button>
+            <div className="relative flex-1">
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="w-full h-full px-6 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </button>
+
+              {/* Share Menu - Absolute Positioned Popover */}
+              {showShareMenu && (
+                <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-10">
+                  <button onClick={() => handleShare('copy')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
+                    Copy Link
+                  </button>
+                  <button onClick={() => handleShare('sms')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
+                    Send via SMS
+                  </button>
+                  <button onClick={() => handleShare('whatsapp')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
+                    WhatsApp
+                  </button>
+                  <button onClick={() => handleShare('twitter')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
+                    Twitter
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {!user && (
@@ -354,59 +387,25 @@ export default function QuestDetailPage() {
             </p>
           )}
 
-          {/* Share Menu */}
-          {showShareMenu && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-700 mb-3">Share via:</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => handleShare('copy')}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 text-sm font-medium"
-                >
-                  📋 Copy Link
-                </button>
-                <button
-                  onClick={() => handleShare('sms')}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 text-sm font-medium"
-                >
-                  💬 SMS
-                </button>
-                <button
-                  onClick={() => handleShare('whatsapp')}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 text-sm font-medium"
-                >
-                  📱 WhatsApp
-                </button>
-                <button
-                  onClick={() => handleShare('twitter')}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 text-sm font-medium"
-                >
-                  🐦 Twitter
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Rating Modal */}
+          {/* Rating Modal - High Blur, No Dark Overlay */}
           {showRating && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowRating(false)}>
-              <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">Rate Your Quest</h3>
+            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowRating(false)}>
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-2xl font-bold text-[#4A295F] mb-4 text-center">Rate Your Adventure</h3>
 
-                <div className="mb-6">
-                  <p className="text-sm text-gray-600 mb-3">How was your experience?</p>
-                  <div className="flex gap-2 justify-center">
+                <div className="mb-6 text-center">
+                  <div className="flex gap-3 justify-center mb-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         onClick={() => setRating(star)}
-                        className="hover:scale-110 transition-transform"
+                        className="hover:scale-110 transition-transform focus:outline-none"
                       >
                         <svg
-                          className={`w-10 h-10 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                          className={`w-12 h-12 transition-colors ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
                           fill={star <= rating ? 'currentColor' : 'none'}
                           stroke="currentColor"
-                          strokeWidth="2"
+                          strokeWidth="1.5"
                           viewBox="0 0 24 24"
                         >
                           <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -414,17 +413,17 @@ export default function QuestDetailPage() {
                       </button>
                     ))}
                   </div>
+                  <p className="text-sm font-medium text-gray-500">
+                    {rating === 0 ? 'Tap to rate' : rating === 5 ? 'Amazing!' : rating >= 4 ? 'Great!' : 'Thanks for rating!'}
+                  </p>
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Feedback (optional)
-                  </label>
                   <textarea
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
-                    placeholder="Share your thoughts..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    placeholder="Any notes on your journey?"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 resize-none"
                     rows={3}
                   />
                 </div>
@@ -432,33 +431,34 @@ export default function QuestDetailPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowRating(false)}
-                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={submitCompletion}
-                    disabled={completing}
-                    className="flex-1 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium disabled:opacity-50"
+                    disabled={completing || rating === 0}
+                    className="flex-1 px-4 py-3 bg-[#4A295F] text-white font-bold rounded-xl hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-200"
                   >
-                    {completing ? 'Completing...' : 'Complete Quest'}
+                    {completing ? 'Saving...' : 'Complete!'}
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="mt-4 text-center">
-            <button className="text-gray-600 hover:text-gray-800 text-sm">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+
+
+          <div className="mt-8 text-center border-t pt-6">
+            <button
+              onClick={handleViewOnMap}
+              className="text-[#4A295F] hover:text-purple-900 font-semibold text-lg underline decoration-2 underline-offset-4 transition"
+            >
               View on Map
             </button>
           </div>
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   );
 }
