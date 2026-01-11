@@ -6,6 +6,7 @@ import { Quest } from '@/lib/types';
 import { useAuth } from '@/lib/useAuth';
 import { completeQuest } from '@/lib/completions';
 import { addToFavorites, removeFromFavorites, getFavorites } from '@/lib/favorites';
+import { activateQuest, deactivateQuest, isQuestActive, getActiveQuests } from '@/lib/activeQuests';
 import { useToast } from '@/lib/toast';
 import LocationDisplay from '@/components/LocationDisplay';
 
@@ -26,22 +27,48 @@ export default function QuestDetailPage() {
   const [togglingFavorite, setTogglingFavorite] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
-
+  const [isActive, setIsActive] = useState(false);
+  const [activating, setActivating] = useState(false);
 
   useEffect(() => {
-    // For now, we'll retrieve the quest from localStorage
-    // In a real app, you'd fetch it from the API
-    const storedQuests = localStorage.getItem('currentQuests');
-    if (storedQuests) {
-      const quests: Quest[] = JSON.parse(storedQuests);
-      const foundQuest = quests.find(q => q.quest_id === questId);
-      setQuest(foundQuest || null);
-    }
-    setLoading(false);
+    const loadQuest = async () => {
+      // First, try to retrieve the quest from localStorage
+      const storedQuests = localStorage.getItem('currentQuests');
+      if (storedQuests) {
+        const quests: Quest[] = JSON.parse(storedQuests);
+        const foundQuest = quests.find(q => q.quest_id === questId);
+        if (foundQuest) {
+          setQuest(foundQuest);
+          setLoading(false);
+          return;
+        }
+      }
 
-    // Check if favorited
+      // If not in localStorage, try to fetch from active quests in Firestore
+      if (user) {
+        try {
+          const activeQuests = await getActiveQuests(user.uid);
+          const foundQuest = activeQuests.find(aq => aq.quest_id === questId);
+          if (foundQuest) {
+            setQuest(foundQuest.quest_data);
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Error loading active quest from Firestore:', error);
+        }
+      }
+
+      setQuest(null);
+      setLoading(false);
+    };
+
+    loadQuest();
+
+    // Check if favorited and if active
     if (user) {
       checkFavoriteStatus();
+      checkActiveStatus();
     }
   }, [questId, user]);
 
@@ -52,6 +79,16 @@ export default function QuestDetailPage() {
       setIsFavorite(favorites.some(fav => fav.item_id === questId));
     } catch (error) {
       console.error('Error checking favorite status:', error);
+    }
+  };
+
+  const checkActiveStatus = async () => {
+    if (!user) return;
+    try {
+      const active = await isQuestActive(user.uid, questId);
+      setIsActive(active);
+    } catch (error) {
+      console.error('Error checking active status:', error);
     }
   };
 
@@ -80,6 +117,25 @@ export default function QuestDetailPage() {
     }
   };
 
+  const handleActivateQuest = async () => {
+    if (!user || !quest) {
+      showToast('Please sign in to activate quests', 'warning');
+      return;
+    }
+
+    try {
+      setActivating(true);
+      await activateQuest(user.uid, quest);
+      setIsActive(true);
+      showToast('Quest activated! Ready to start?', 'success');
+    } catch (error) {
+      console.error('Error activating quest:', error);
+      showToast('Failed to activate quest', 'error');
+    } finally {
+      setActivating(false);
+    }
+  };
+
   const handleCompleteQuest = async () => {
     if (!user || !quest) {
       showToast('Please sign in to complete quests', 'warning');
@@ -95,6 +151,14 @@ export default function QuestDetailPage() {
     try {
       setCompleting(true);
       const result = await completeQuest(user.uid, quest.quest_id, quest.title, rating || undefined, feedback || undefined);
+      
+      // Deactivate the quest after completion
+      try {
+        await deactivateQuest(user.uid, quest.quest_id);
+      } catch (error) {
+        console.error('Error deactivating quest:', error);
+      }
+      
       showToast(`Quest completed! You earned ${result.xp_earned} XP!`, 'success');
       setShowRating(false);
       router.push('/profile');
@@ -417,16 +481,29 @@ export default function QuestDetailPage() {
         {/* Action Buttons */}
         < div className="bg-purple-50 rounded-lg shadow-lg p-6 relative" >
           <div className="flex gap-4">
-            <button
-              onClick={handleCompleteQuest}
-              disabled={!user}
-              className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Complete Quest
-            </button>
+            {!isActive ? (
+              <button
+                onClick={handleActivateQuest}
+                disabled={!user || activating}
+                className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {activating ? 'Activating...' : 'Activate Quest'}
+              </button>
+            ) : (
+              <button
+                onClick={handleCompleteQuest}
+                disabled={!user}
+                className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Complete Quest
+              </button>
+            )}
             <button
               onClick={toggleFavorite}
               disabled={togglingFavorite || !user}

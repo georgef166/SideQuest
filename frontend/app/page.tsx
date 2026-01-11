@@ -490,6 +490,28 @@ export default function Home() {
                 >
                   Profile
                 </button>
+                <button
+                  onClick={() => router.push('/quests')}
+                  className="transition text-sm font-semibold cursor-pointer border-b-2 border-transparent"
+                  style={{ 
+                    fontWeight: 600, 
+                    fontSize: '15px', 
+                    fontFamily: 'var(--font-inter)', 
+                    letterSpacing: 'normal', 
+                    lineHeight: '1',
+                    color: '#4A295F'
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLButtonElement).style.color = '#5A3975';
+                    (e.target as HTMLButtonElement).style.borderBottomColor = '#4A295F';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLButtonElement).style.color = '#4A295F';
+                    (e.target as HTMLButtonElement).style.borderBottomColor = 'transparent';
+                  }}
+                >
+                  Quests
+                </button>
               </div>
             )}
 
