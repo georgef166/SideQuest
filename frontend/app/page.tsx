@@ -544,18 +544,21 @@ export default function Home() {
               )}
 
               {/* Search Bar */}
-              <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="Search events, places, or categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all text-gray-900"
-                  style={{
-                    borderColor: searchQuery ? '#4A295F' : '#d1d5db',
-                    backgroundColor: '#ffffff',
-                  }}
-                />
+              <div className="mb-4 flex justify-center">
+                <div style={{ width: '100%', maxWidth: '800px' }}>
+                  <input
+                    type="text"
+                    placeholder="Search events, places, or categories..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 py-3 border-2 focus:outline-none transition-all text-gray-900"
+                    style={{
+                      borderColor: searchQuery ? '#4A295F' : '#d1d5db',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '50px',
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Category Filter */}
