@@ -30,12 +30,6 @@ export default function AuthButton() {
 
   if (user) {
     return (
-<<<<<<< HEAD
-      <div className="flex items-center gap-3 mr-0">
-        <ProfileMenuDropdown 
-          photoURL={user.photoURL || undefined} 
-          displayName={user.displayName || 'User'} 
-=======
       <div className="flex items-center gap-4 mr-4">
         {/* Notification Bell */}
         <div className="relative" ref={notificationRef}>
@@ -74,7 +68,6 @@ export default function AuthButton() {
         <ProfileMenuDropdown
           photoURL={user.photoURL || undefined}
           displayName={user.displayName || 'User'}
->>>>>>> 27543ca98c0d75c407f5f5f0285b04c3d52ae241
         />
         <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
           {user.displayName || 'User'}

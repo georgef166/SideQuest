@@ -280,7 +280,7 @@ export default function QuestDetailPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
-          onClick={() => router.push('/quests')}
+          onClick={() => router.push('/')}
           className="mb-6 flex items-center text-[#4A295F] hover:text-purple-900 font-semibold transition-colors group"
         >
           <svg className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -430,10 +430,10 @@ export default function QuestDetailPage() {
         {/* Route Steps (Collapsible) */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-6">
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-[#4A295F] mb-6">Route Steps</h2>
+            <h2 className="text-2xl font-bold text-[#4A295F] mb-8">Route Steps</h2>
             <div className="space-y-6">
               {quest.steps.map((step, index) => (
-                <div key={step.order} className="flex gap-4">
+                <div key={step.order} className={`flex gap-4 ${index === 0 ? 'mt-4' : ''}`}>
                   {/* Step Number */}
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 bg-[#4A295F] text-white rounded-full flex items-center justify-center font-bold text-lg">

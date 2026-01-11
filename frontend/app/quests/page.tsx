@@ -124,9 +124,12 @@ export default function QuestsPage() {
           </div>
         ) : activeQuests.length === 0 ? (
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-12 text-center">
-            <svg className="w-16 h-16 mx-auto mb-4 text-[#4A295F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <div className="flex justify-center mb-4">
+              <svg className="w-16 h-16 text-[#4A295F]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="9" strokeWidth="2"></circle>
+                <polyline points="9 12 11 14 15 10" strokeWidth="2"></polyline>
+              </svg>
+            </div>
             <h2 className="text-2xl font-bold text-[#4A295F] mb-2">No Active Quests Yet</h2>
             <p className="text-gray-600 mb-6">Start an adventure by discovering and activating quests!</p>
             <button
