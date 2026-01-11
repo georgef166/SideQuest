@@ -1,28 +1,37 @@
 import os
 import json
-import google.generativeai as genai
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure the Gemini API
-GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY") # Often reused or specific GEMINI_API_KEY
-if not GOOGLE_API_KEY:
-    # Try alternate env var
-    GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
-
-if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
+# Try to import Gemini, but handle compatibility issues with Python 3.14+
+genai = None
+try:
+    import google.generativeai as genai
+    
+    # Configure the Gemini API
+    GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY") # Often reused or specific GEMINI_API_KEY
+    if not GOOGLE_API_KEY:
+        # Try alternate env var
+        GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
+    
+    if GOOGLE_API_KEY:
+        genai.configure(api_key=GOOGLE_API_KEY)
+except Exception as e:
+    import logging
+    logging.warning(f"Failed to import or configure Gemini: {e}. Gemini features will be disabled.")
 
 class GeminiService:
     def __init__(self):
         self.model = None
-        if GOOGLE_API_KEY:
+        if genai and GOOGLE_API_KEY:
             try:
                 self.model = genai.GenerativeModel('gemini-1.5-flash')
             except Exception as e:
                 print(f"Error initializing Gemini model: {e}")
+        elif not genai:
+            print("Warning: Gemini library not available. Quest enrichment will use defaults.")
         else:
             print("Warning: No Google API Key found for Gemini Service")
 
