@@ -458,7 +458,7 @@ export default function QuestDetailPage() {
             </button>
           </div>
         </div>
-      </main >
-    </div >
+      </main>
+    </div>
   );
 }
