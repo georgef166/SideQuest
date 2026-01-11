@@ -501,10 +501,9 @@ function ProfilePageContent() {
                 <p className="mt-4 text-gray-600">Loading your profile...</p>
               </div>
             ) : (
-              <div className={isSectionMode ? '' : 'grid grid-cols-1 lg:grid-cols-4 gap-8'}>
-                {/* Left Sidebar - Navigation (hidden in section mode) */}
-                {!isSectionMode && (
-                  <div className="lg:col-span-1">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Left Sidebar - Navigation */}
+                <div className="lg:col-span-1">
                     <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                       <nav className="space-y-2">
                         {sections.map((section) => (
@@ -521,19 +520,16 @@ function ProfilePageContent() {
                         ))}
                       </nav>
                     </div>
-                  </div>
-                )}
+                </div>
 
                 {/* Right Content Panel */}
-                <div className={isSectionMode ? 'w-full' : 'lg:col-span-3'}>
+                <div className="lg:col-span-3">
                   <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
                     {activeSection_obj && (
                       <>
-                        {!isSectionMode && (
-                          <h2 className="section-title text-[#4A295F] mb-6">
-                            {activeSection_obj.label}
-                          </h2>
-                        )}
+                        <h2 className="section-title text-[#4A295F] mb-6">
+                          {activeSection_obj.label}
+                        </h2>
                         {activeSection_obj.render()}
                       </>
                     )}
