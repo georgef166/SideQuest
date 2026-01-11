@@ -89,9 +89,9 @@ export const VIBE_OPTIONS = [
 ];
 
 export const BUDGET_OPTIONS = [
-  { value: 'broke', label: 'Broke (budget conscious)' },
+  { value: 'broke', label: 'Budget-Conscious' },
   { value: 'moderate', label: 'Moderate' },
-  { value: 'bougie', label: 'Bougie (spendable)' },
+  { value: 'bougie', label: 'Premium' },
 ];
 
 export const TRANSPORT_OPTIONS = [

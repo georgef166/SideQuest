@@ -250,6 +250,86 @@ function ProfilePageContent() {
           </div>
         </div>
       </div>
+
+      <div className="bg-purple-50 rounded-lg p-6 border border-purple-200 mt-6">
+        <h4 className="font-semibold text-[#4A295F] mb-4">Transportation & Accessibility</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Transportation</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.lifestyle?.transportation?.length ? (
+                userProfile.lifestyle.transportation.map((t) => (
+                  <span key={t} className="px-2 py-1 bg-white text-[#4A295F] text-xs rounded border border-purple-100 capitalize">
+                    {t}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Accessibility Needs</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.preferences?.accessibilityNeeds?.length ? (
+                userProfile.preferences.accessibilityNeeds.map((a) => (
+                  <span key={a} className="px-2 py-1 bg-white text-[#4A295F] text-xs rounded border border-purple-100">
+                    {a}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-purple-50 rounded-lg p-6 border border-purple-200 mt-6">
+        <h4 className="font-semibold text-[#4A295F] mb-4">Preferences</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Energy Level</p>
+            <div className="text-sm text-gray-700 capitalize">
+              {userProfile?.preferences?.energyLevel || 'Not set'}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Time Preference</p>
+            <div className="text-sm text-gray-700 capitalize">
+              {userProfile?.preferences?.timePreference || 'Not set'}
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Favorite Categories</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.preferences?.favoriteCategories?.length ? (
+                userProfile.preferences.favoriteCategories.map((c) => (
+                  <span key={c} className="px-3 py-1 bg-[#4A295F] text-white text-xs rounded-full font-medium capitalize">
+                    {c}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Social Comfort</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.preferences?.socialComfort?.length ? (
+                userProfile.preferences.socialComfort.map((s) => (
+                  <span key={s} className="px-2 py-1 bg-white text-[#4A295F] text-xs rounded border border-purple-100">
+                    {s}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 

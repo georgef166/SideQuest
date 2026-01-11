@@ -212,9 +212,9 @@ export default function EditProfilePage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <button
             onClick={handleCancel}
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+            className="text-[#4A295F] hover:text-purple-900 font-medium text-sm"
           >
-            Back
+            ← Back
           </button>
           <h1 className="text-lg font-semibold text-gray-900">Edit Profile</h1>
           <div className="w-12"></div>
@@ -412,59 +412,61 @@ export default function EditProfilePage() {
 
         {/* My Preferences Section */}
         <SectionHeader title="My Preferences">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField label="Accessibility Needs">
-              <CheckboxGroup
-                options={ACCESSIBILITY_OPTIONS}
-                selected={formData.preferences.accessibilityNeeds || []}
-                onChange={(selected) =>
-                  handleFormChange('preferences', 'accessibilityNeeds', selected)
-                }
-              />
-            </FormField>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField label="Time Preference">
+                <RadioGroup
+                  options={[
+                    { value: 'spontaneous', label: 'Spontaneous' },
+                    { value: 'planned', label: 'Planned' },
+                    { value: 'flexible', label: 'Flexible' },
+                  ]}
+                  selected={formData.preferences.timePreference}
+                  onChange={(value) =>
+                    handleFormChange('preferences', 'timePreference', value)
+                  }
+                />
+              </FormField>
 
-            <FormField label="Time Preference">
-              <RadioGroup
-                options={[
-                  { value: 'spontaneous', label: 'Spontaneous' },
-                  { value: 'planned', label: 'Planned' },
-                  { value: 'flexible', label: 'Flexible' },
-                ]}
-                selected={formData.preferences.timePreference}
-                onChange={(value) =>
-                  handleFormChange('preferences', 'timePreference', value)
-                }
-              />
-            </FormField>
-
-            <div className="md:col-span-2">
-              <FormField label="Favorite Categories">
-                <CheckboxGroup
-                  options={CATEGORY_OPTIONS}
-                  selected={formData.preferences.favoriteCategories || []}
-                  onChange={(selected) =>
-                    handleFormChange('preferences', 'favoriteCategories', selected)
+              <FormField label="Energy Level">
+                <RadioGroup
+                  options={ENERGY_OPTIONS}
+                  selected={formData.preferences.energyLevel}
+                  onChange={(value) =>
+                    handleFormChange('preferences', 'energyLevel', value)
                   }
                 />
               </FormField>
             </div>
 
-            <FormField label="Energy Level">
-              <RadioGroup
-                options={ENERGY_OPTIONS}
-                selected={formData.preferences.energyLevel}
-                onChange={(value) =>
-                  handleFormChange('preferences', 'energyLevel', value)
-                }
-              />
-            </FormField>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField label="Accessibility Needs">
+                <CheckboxGroup
+                  options={ACCESSIBILITY_OPTIONS}
+                  selected={formData.preferences.accessibilityNeeds || []}
+                  onChange={(selected) =>
+                    handleFormChange('preferences', 'accessibilityNeeds', selected)
+                  }
+                />
+              </FormField>
 
-            <FormField label="Social Comfort">
+              <FormField label="Social Comfort">
+                <CheckboxGroup
+                  options={SOCIAL_OPTIONS}
+                  selected={formData.preferences.socialComfort || []}
+                  onChange={(selected) =>
+                    handleFormChange('preferences', 'socialComfort', selected)
+                  }
+                />
+              </FormField>
+            </div>
+
+            <FormField label="Favorite Categories">
               <CheckboxGroup
-                options={SOCIAL_OPTIONS}
-                selected={formData.preferences.socialComfort || []}
+                options={CATEGORY_OPTIONS}
+                selected={formData.preferences.favoriteCategories || []}
                 onChange={(selected) =>
-                  handleFormChange('preferences', 'socialComfort', selected)
+                  handleFormChange('preferences', 'favoriteCategories', selected)
                 }
               />
             </FormField>
@@ -483,7 +485,7 @@ export default function EditProfilePage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-3 bg-[#4A295F] text-white font-medium rounded-lg hover:bg-[#3A1F4F] transition-colors disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
