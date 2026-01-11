@@ -6,8 +6,11 @@ import { Quest } from '@/lib/types';
 import { useAuth } from '@/lib/useAuth';
 import { completeQuest } from '@/lib/completions';
 import { addToFavorites, removeFromFavorites, getFavorites } from '@/lib/favorites';
+import { activateQuest, deactivateQuest, isQuestActive, getActiveQuests } from '@/lib/activeQuests';
 import { useToast } from '@/lib/toast';
 import LocationDisplay from '@/components/LocationDisplay';
+import Navbar from '@/components/Navbar';
+import ShareToFriendsModal from '@/components/ShareToFriendsModal';
 
 export default function QuestDetailPage() {
   const params = useParams();
@@ -25,21 +28,50 @@ export default function QuestDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [togglingFavorite, setTogglingFavorite] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
+  const [isActive, setIsActive] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
 
   useEffect(() => {
-    // For now, we'll retrieve the quest from localStorage
-    // In a real app, you'd fetch it from the API
-    const storedQuests = localStorage.getItem('currentQuests');
-    if (storedQuests) {
-      const quests: Quest[] = JSON.parse(storedQuests);
-      const foundQuest = quests.find(q => q.quest_id === questId);
-      setQuest(foundQuest || null);
-    }
-    setLoading(false);
+    const loadQuest = async () => {
+      // First, try to retrieve the quest from localStorage
+      const storedQuests = localStorage.getItem('currentQuests');
+      if (storedQuests) {
+        const quests: Quest[] = JSON.parse(storedQuests);
+        const foundQuest = quests.find(q => q.quest_id === questId);
+        if (foundQuest) {
+          setQuest(foundQuest);
+          setLoading(false);
+          return;
+        }
+      }
 
-    // Check if favorited
+      // If not in localStorage, try to fetch from active quests in Firestore
+      if (user) {
+        try {
+          const activeQuests = await getActiveQuests(user.uid);
+          const foundQuest = activeQuests.find(aq => aq.quest_id === questId);
+          if (foundQuest) {
+            setQuest(foundQuest.quest_data);
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Error loading active quest from Firestore:', error);
+        }
+      }
+
+      setQuest(null);
+      setLoading(false);
+    };
+
+    loadQuest();
+
+    // Check if favorited and if active
     if (user) {
       checkFavoriteStatus();
+      checkActiveStatus();
     }
   }, [questId, user]);
 
@@ -50,6 +82,16 @@ export default function QuestDetailPage() {
       setIsFavorite(favorites.some(fav => fav.item_id === questId));
     } catch (error) {
       console.error('Error checking favorite status:', error);
+    }
+  };
+
+  const checkActiveStatus = async () => {
+    if (!user) return;
+    try {
+      const active = await isQuestActive(user.uid, questId);
+      setIsActive(active);
+    } catch (error) {
+      console.error('Error checking active status:', error);
     }
   };
 
@@ -78,6 +120,26 @@ export default function QuestDetailPage() {
     }
   };
 
+  const handleActivateQuest = async () => {
+    if (!user || !quest) {
+      showToast('Please sign in to activate quests', 'warning');
+      return;
+    }
+
+    try {
+      setActivating(true);
+      await activateQuest(user.uid, quest);
+      setIsActive(true);
+      showToast('Quest activated! Ready to start?', 'success');
+      router.push('/quests');
+    } catch (error) {
+      console.error('Error activating quest:', error);
+      showToast('Failed to activate quest', 'error');
+    } finally {
+      setActivating(false);
+    }
+  };
+
   const handleCompleteQuest = async () => {
     if (!user || !quest) {
       showToast('Please sign in to complete quests', 'warning');
@@ -93,6 +155,14 @@ export default function QuestDetailPage() {
     try {
       setCompleting(true);
       const result = await completeQuest(user.uid, quest.quest_id, quest.title, rating || undefined, feedback || undefined);
+
+      // Deactivate the quest after completion
+      try {
+        await deactivateQuest(user.uid, quest.quest_id);
+      } catch (error) {
+        console.error('Error deactivating quest:', error);
+      }
+
       showToast(`Quest completed! You earned ${result.xp_earned} XP!`, 'success');
       setShowRating(false);
       router.push('/profile');
@@ -124,6 +194,9 @@ export default function QuestDetailPage() {
       case 'twitter':
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`);
         break;
+      case 'dm':
+        setShowFriendsModal(true);
+        break;
     }
     setShowShareMenu(false);
   };
@@ -133,7 +206,7 @@ export default function QuestDetailPage() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4A295F] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading quest...</p>
+          <p className="mt-4 text-black font-medium">Loading quest...</p>
         </div>
       </div>
     );
@@ -168,7 +241,7 @@ export default function QuestDetailPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Quest Not Found</h2>
-            <p className="text-gray-600 mb-6">This quest doesn't exist or has expired.</p>
+            <p className="text-black mb-6">This quest doesn't exist or has expired.</p>
             <button
               onClick={() => router.push('/')}
               className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
@@ -203,141 +276,234 @@ export default function QuestDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <button
-              onClick={() => router.push('/')}
-              className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition"
-            >
-              SideQuest
-            </button>
-            <button
-              onClick={() => router.push('/')}
-              className="px-4 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
-            >
-              ← Back to Quests
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Quest Header */}
-        <div className="bg-purple-50 rounded-lg shadow-lg p-8 mb-6 border border-purple-100">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-4xl font-bold text-[#4A295F] mb-2">{quest.title}</h1>
-              <p className="text-xl text-gray-600">{quest.description}</p>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={() => router.push('/quests')}
+          className="mb-6 flex items-center text-[#4A295F] hover:text-purple-900 font-semibold transition-colors group"
+        >
+          <svg className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Quests
+        </button>
+
+        {/* Quest Title */}
+        <div className="mb-6">
+          <h1 className="text-5xl font-bold text-[#4A295F] mb-4">{quest.title}</h1>
+
+          {/* Rating and Reviews - Starting with 5 stars to encourage trying */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              {/* Star Rating - Always 5 stars for new quests */}
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg
+                    key={star}
+                    className="w-6 h-6 text-yellow-400 fill-yellow-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <span className="text-2xl font-bold text-gray-800">
+                5.0
+              </span>
             </div>
-            <span className="px-4 py-2 bg-purple-100 text-[#4A295F] rounded-full font-semibold">
-              {quest.category}
+            <span className="text-black font-medium">•</span>
+            <span className="text-lg text-black font-semibold">
+              0 reviews
             </span>
           </div>
 
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {quest.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 bg-purple-100 text-[#4A295F] rounded-full text-sm font-medium"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Quest Stats */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-800">{totalTime} min</div>
-              <div className="text-sm text-gray-600">Total Time</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-800">${totalCost.toFixed(0)}</div>
-              <div className="text-sm text-gray-600">Estimated Cost</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-gray-800 capitalize">
-                {quest.difficulty.replace('_', ' ')}
-              </div>
-              <div className="text-sm text-gray-600">Energy Level</div>
-            </div>
-          </div>
-
-          {/* Best Time */}
-          {quest.best_time && (
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center">
-              <p className="text-sm text-gray-600">
-                <strong>Best Time:</strong> {quest.best_time}
-              </p>
-            </div>
-          )}
+          {/* Category Badge */}
+          <span className="inline-block px-4 py-2 bg-purple-100 text-[#4A295F] rounded-full font-semibold text-sm">
+            {quest.category}
+          </span>
         </div>
 
-        {/* Quest Steps */}
-        <div className="bg-purple-50 rounded-lg shadow-lg p-8 mb-6 border border-purple-100">
-          <h2 className="text-2xl font-bold text-[#4A295F] mb-6">Your Adventure Steps</h2>
+        {/* Embedded Map */}
+        <div className="w-full h-[450px] rounded-xl overflow-hidden shadow-lg mb-8 border border-gray-200">
+          <iframe
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            src={`https://www.google.com/maps/embed/v1/directions?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&origin=Current+Location&destination=${quest.steps[quest.steps.length - 1].location.lat},${quest.steps[quest.steps.length - 1].location.lng}${quest.steps.length > 1 ? '&waypoints=' + quest.steps.slice(0, -1).map(step => `${step.location.lat},${step.location.lng}`).join('|') : ''}`}
+          ></iframe>
+        </div>
 
-          <div className="space-y-6">
-            {quest.steps.map((step, index) => (
-              <div key={step.order} className="flex gap-4">
-                {/* Step Number */}
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-[#4A295F] text-white rounded-full flex items-center justify-center font-bold text-lg">
-                    {step.order}
-                  </div>
-                  {index < quest.steps.length - 1 && (
-                    <div className="w-0.5 h-16 bg-purple-200 mx-auto mt-2"></div>
-                  )}
+        {/* Overview and Details Section */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-6">
+          {/* Section Tabs */}
+          <div className="border-b border-gray-200">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`px-8 py-4 font-semibold border-b-2 transition-colors ${activeTab === 'overview'
+                  ? 'text-[#4A295F] border-[#4A295F]'
+                  : 'text-black border-transparent hover:text-gray-900'
+                  }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('details')}
+                className={`px-8 py-4 font-semibold border-b-2 transition-colors ${activeTab === 'details'
+                  ? 'text-[#4A295F] border-[#4A295F]'
+                  : 'text-black border-transparent hover:text-gray-900'
+                  }`}
+              >
+                Details
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-8">
+            {activeTab === 'overview' ? (
+              <>
+                {/* Description */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-3">About this experience</h2>
+                  <p className="text-black text-lg leading-relaxed">
+                    {quest.description.split('.')[0]}.
+                  </p>
                 </div>
 
-                {/* Step Content */}
-                <div className="flex-grow pb-6">
-                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-semibold text-[#4A295F] uppercase">
-                        {step.type}
+
+              </>
+            ) : (
+              <>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <div className="text-sm text-black mb-1">Avg Time Spent</div>
+                    <div className="text-2xl font-bold text-gray-900">{totalTime} min</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <div className="text-sm text-black mb-1">Avg Money Spent</div>
+                    <div className="text-2xl font-bold text-gray-900">${totalCost.toFixed(0)}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <div className="text-sm text-black mb-1">Best Time to Go</div>
+                    <div className="text-lg font-bold text-gray-900">{quest.best_time || 'Anytime'}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <div className="text-sm text-black mb-1">Age Group</div>
+                    <div className="text-lg font-bold text-gray-900">All Ages</div>
+                  </div>
+                </div>
+
+                {/* Tags */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {quest.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 bg-purple-50 text-[#4A295F] rounded-full text-sm font-medium border border-purple-100"
+                      >
+                        #{tag}
                       </span>
-                      {step.estimated_time && (
-                        <span className="text-sm text-gray-500">
-                          • {step.estimated_time} min
-                        </span>
-                      )}
+                    ))}
+                  </div>
+                </div>
+
+                {/* Energy Level */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Energy Level</h3>
+                  <div className="inline-block px-4 py-2 bg-purple-50 text-[#4A295F] rounded-lg font-semibold capitalize border border-purple-100">
+                    {quest.difficulty.replace('_', ' ')}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Route Steps (Collapsible) */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-6">
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-[#4A295F] mb-6">Route Steps</h2>
+            <div className="space-y-6">
+              {quest.steps.map((step, index) => (
+                <div key={step.order} className="flex gap-4">
+                  {/* Step Number */}
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-[#4A295F] text-white rounded-full flex items-center justify-center font-bold text-lg">
+                      {step.order}
                     </div>
-                    <h3 className="text-xl font-bold text-[#4A295F] mb-2">{step.name}</h3>
-                    {step.description && (
-                      <p className="text-gray-600 mb-3">{step.description}</p>
+                    {index < quest.steps.length - 1 && (
+                      <div className="w-0.5 h-16 bg-purple-200 mx-auto mt-2"></div>
                     )}
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="flex-1">
-                        <LocationDisplay lat={step.location.lat} lng={step.location.lng} />
-                      </span>
+                  </div>
+
+                  {/* Step Content */}
+                  <div className="flex-grow pb-6">
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-semibold text-[#4A295F] uppercase">
+                          {step.type}
+                        </span>
+                        {step.estimated_time && (
+                          <span className="text-sm text-black font-medium">
+                            • {step.estimated_time} min
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-bold text-[#4A295F] mb-2">{step.name}</h3>
+                      {step.description && (
+                        <p className="text-black mb-3">{step.description}</p>
+                      )}
+                      <div className="flex items-center gap-2 text-sm text-black">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="flex-1">
+                          <LocationDisplay lat={step.location.lat} lng={step.location.lng} />
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-purple-50 rounded-lg shadow-lg p-6 relative">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-6 relative">
           <div className="flex gap-4">
-            <button
-              onClick={handleCompleteQuest}
-              disabled={!user}
-              className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Complete Quest
-            </button>
+            {!isActive ? (
+              <button
+                onClick={handleActivateQuest}
+                disabled={!user || activating}
+                className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {activating ? 'Activating...' : 'Activate Quest'}
+              </button>
+            ) : (
+              <button
+                onClick={() => router.push('/quests')}
+                disabled={!user}
+                className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                View Active Quests
+              </button>
+            )}
             <button
               onClick={toggleFavorite}
               disabled={togglingFavorite || !user}
@@ -371,6 +537,9 @@ export default function QuestDetailPage() {
                   <button onClick={() => handleShare('whatsapp')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
                     WhatsApp
                   </button>
+                  <button onClick={() => handleShare('dm')} className="w-full text-left px-4 py-2 hover:bg-purple-50 text-[#4A295F] text-sm font-bold transition-colors">
+                    DM to Friends
+                  </button>
                   <button onClick={() => handleShare('twitter')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
                     Twitter
                   </button>
@@ -379,82 +548,94 @@ export default function QuestDetailPage() {
             </div>
           </div>
 
-          {!user && (
-            <p className="mt-3 text-sm text-gray-500 text-center">
-              Sign in to save favorites and track completions
-            </p>
-          )}
+          {
+            !user && (
+              <p className="mt-3 text-sm text-black font-medium text-center">
+                Sign in to save favorites and track completions
+              </p>
+            )
+          }
 
           {/* Rating Modal - High Blur, No Dark Overlay */}
-          {showRating && (
-            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowRating(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-gray-100" onClick={(e) => e.stopPropagation()}>
-                <h3 className="text-2xl font-bold text-[#4A295F] mb-4 text-center">Rate Your Adventure</h3>
+          {
+            showRating && (
+              <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowRating(false)}>
+                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                  <h3 className="text-2xl font-bold text-[#4A295F] mb-4 text-center">Rate Your Adventure</h3>
 
-                <div className="mb-6 text-center">
-                  <div className="flex gap-3 justify-center mb-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => setRating(star)}
-                        className="hover:scale-110 transition-transform focus:outline-none"
-                      >
-                        <svg
-                          className={`w-12 h-12 transition-colors ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
-                          fill={star <= rating ? 'currentColor' : 'none'}
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          viewBox="0 0 24 24"
+                  <div className="mb-6 text-center">
+                    <div className="flex gap-3 justify-center mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setRating(star)}
+                          className="hover:scale-110 transition-transform focus:outline-none"
                         >
-                          <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                      </button>
-                    ))}
+                          <svg
+                            className={`w-12 h-12 transition-colors ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
+                            fill={star <= rating ? 'currentColor' : 'none'}
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {rating === 0 ? 'Tap to rate' : rating === 5 ? 'Amazing!' : rating >= 4 ? 'Great!' : 'Thanks for rating!'}
+                    </p>
                   </div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {rating === 0 ? 'Tap to rate' : rating === 5 ? 'Amazing!' : rating >= 4 ? 'Great!' : 'Thanks for rating!'}
-                  </p>
-                </div>
 
-                <div className="mb-6">
-                  <textarea
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    placeholder="Any notes on your journey?"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 resize-none"
-                    rows={3}
-                  />
-                </div>
+                  <div className="mb-6">
+                    <textarea
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      placeholder="Any notes on your journey?"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 resize-none"
+                      rows={3}
+                    />
+                  </div>
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowRating(false)}
-                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={submitCompletion}
-                    disabled={completing || rating === 0}
-                    className="flex-1 px-4 py-3 bg-[#4A295F] text-white font-bold rounded-xl hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-200"
-                  >
-                    {completing ? 'Saving...' : 'Complete!'}
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowRating(false)}
+                      className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={submitCompletion}
+                      disabled={completing || rating === 0}
+                      className="flex-1 px-4 py-3 bg-[#4A295F] text-white font-bold rounded-xl hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-200"
+                    >
+                      {completing ? 'Saving...' : 'Complete!'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )
+          }
+
+          {showFriendsModal && quest && (
+            <ShareToFriendsModal
+              questTitle={quest.title}
+              questUrl={`${window.location.origin}/quest/${quest.quest_id}`}
+              onClose={() => setShowFriendsModal(false)}
+            />
           )}
 
-          <div className="mt-8 text-center border-t pt-6">
+          <div className="mt-2 text-center pt-6">
             <button
               onClick={handleViewOnMap}
-              className="text-[#4A295F] hover:text-purple-900 font-semibold text-lg underline decoration-2 underline-offset-4 transition"
+              className="text-gray-900 font-semibold text-lg hover:text-[#4A295F] hover:underline transition-colors cursor-pointer bg-transparent border-none"
             >
-              View on Map
+              Open Route on Google Maps
             </button>
           </div>
-        </div>
-      </main>
-    </div>
+        </div >
+      </main >
+    </div >
   );
 }

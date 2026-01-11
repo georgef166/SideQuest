@@ -2,6 +2,7 @@
 
 import EmailPasswordAuth from '@/components/EmailPasswordAuth';
 import LocationDisplay from '@/components/LocationDisplay';
+import Navbar from '@/components/Navbar';
 import { useState, useEffect, useRef } from 'react';
 // TypeScript: declare window.google for Google Maps
 declare global {
@@ -78,29 +79,13 @@ export default function Home() {
   const [togglingFavorite, setTogglingFavorite] = useState<string | null>(null);
 
   const categories = [
-    'Active',
     'Adventure',
-    'Arts',
     'Bar',
-    'Cafe',
-    'Cheap',
-    'Cultural',
-    'Date Ideas',
-    'Dessert',
-    'Entertainment',
-    'Events',
-    'Food',
-    'Hidden Gems',
-    'Live',
-    'Local Favorites',
-    'Music',
+    'Cheap Food',
+    'Hidden Gem',
+    'Local Fav',
     'Nightlife',
-    'Relaxation',
-    'Shopping',
     'Social',
-    'Sports',
-    'Trending',
-    'Urban',
   ];
 
   // Fuzzy search function - checks if query is contained in text (case-insensitive)
@@ -302,8 +287,8 @@ export default function Home() {
 
         // Create custom pin with quest number
         const pinElement = new PinElement({
-          background: selectedQuestId === quest.quest_id ? '#2563eb' : '#6366f1',
-          borderColor: selectedQuestId === quest.quest_id ? '#1e40af' : '#4f46e5',
+          background: selectedQuestId === quest.quest_id ? '#5A3975' : '#4A295F',
+          borderColor: selectedQuestId === quest.quest_id ? '#3A194F' : '#4A295F',
           glyphColor: '#ffffff',
           glyph: `${index + 1}`,
           scale: selectedQuestId === quest.quest_id ? 1.3 : 1.0,
@@ -345,7 +330,7 @@ export default function Home() {
                 style="
                   margin-top: 12px;
                   width: 100%;
-                  background: #2563eb;
+                  background: #4A295F;
                   color: white;
                   padding: 8px 16px;
                   border-radius: 6px;
@@ -465,57 +450,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-3 items-center h-20 gap-4">
-            {/* Left: Logo */}
-            <div>
-              <h1 className="text-2xl text-[#4A295F]" style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                SideQuest
-              </h1>
-            </div>
-
-            {/* Center: Nav Links */}
-            {user && (
-              <div className="flex justify-center gap-8">
-                <button
-                  onClick={() => router.push('/')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() => router.push('/favorites')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Favorites
-                </button>
-                <button
-                  onClick={() => router.push('/friends')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Friends
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Profile
-                </button>
-              </div>
-            )}
-
-            {/* Right: Auth Actions */}
-            <div className="flex justify-end">
-              {user && <AuthButton />}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {user ? (
@@ -527,7 +462,7 @@ export default function Home() {
                   Discover Your Next Adventure
                 </h2>
 
-                <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#4B5563' }}>
+                <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#000000' }}>
                   {(!userLocation) && (
                     <>Loading your location...</>
                   )}
@@ -536,7 +471,7 @@ export default function Home() {
 
               {userLocation && (
                 <div className="p-3 bg-gray-50 rounded-lg mx-auto block w-fit mb-4" style={{ marginTop: '1rem' }}>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-black">
                     <strong>Your Current Location:</strong> <LocationDisplay lat={userLocation.lat} lng={userLocation.lng} />
                   </p>
                 </div>
@@ -574,40 +509,38 @@ export default function Home() {
                 <label className="text-sm font-medium text-black mb-2 block">
                   Categories
                 </label>
-                <div className="overflow-x-auto scrollbar-hide">
-                  <div className="flex gap-2 pb-2" style={{ width: 'max-content' }}>
-                    {categories.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => {
-                          setSelectedCategories(prev =>
-                            prev.includes(category)
-                              ? prev.filter(c => c !== category)
-                              : [...prev, category]
-                          );
-                        }}
-                        className="px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 shadow-sm"
-                        style={{
-                          backgroundColor: selectedCategories.includes(category) ? '#4A295F' : '#e5e7eb',
-                          color: selectedCategories.includes(category) ? 'white' : '#1f2937',
-                          transform: selectedCategories.includes(category) ? 'scale(1.05)' : 'scale(1)',
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!selectedCategories.includes(category)) {
-                            e.currentTarget.style.backgroundColor = '#d1d5db';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!selectedCategories.includes(category)) {
-                            e.currentTarget.style.backgroundColor = '#e5e7eb';
-                          }
-                        }}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        setSelectedCategories(prev =>
+                          prev.includes(category)
+                            ? prev.filter(c => c !== category)
+                            : [...prev, category]
+                        );
+                      }}
+                      className="px-4 py-2 rounded-full font-medium transition-all duration-200 shadow-sm text-center"
+                      style={{
+                        backgroundColor: selectedCategories.includes(category) ? '#4A295F' : '#e5e7eb',
+                        color: selectedCategories.includes(category) ? 'white' : '#1f2937',
+                        transform: selectedCategories.includes(category) ? 'scale(1.05)' : 'scale(1)',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!selectedCategories.includes(category)) {
+                          e.currentTarget.style.backgroundColor = '#d1d5db';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!selectedCategories.includes(category)) {
+                          e.currentTarget.style.backgroundColor = '#e5e7eb';
+                        }
+                      }}
+                    >
+                      {category}
+                    </button>
+                  ))}
                 </div>
                 {selectedCategories.length > 0 && (
                   <button
@@ -695,19 +628,7 @@ export default function Home() {
                     </select>
                   </div>
 
-                  {quests.length > 0 && !loadingQuests && (
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                      <div className="text-sm text-purple-900">
-                        <strong>Showing {filteredQuests.length} out of {quests.length} activities between {radiusRange[0]}km and {radiusRange[1]}km</strong>
-                        {(searchQuery || selectedCategories.length > 0) && (
-                          <span className="text-xs block mt-1 text-purple-700">
-                            {searchQuery && `Searching: "${searchQuery}"`}
-                            {selectedCategories.length > 0 && ` • ${selectedCategories.length} categories`}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               </div>
             </div>

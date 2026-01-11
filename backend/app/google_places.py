@@ -10,22 +10,17 @@ class GooglePlacesAPI:
         self.api_key = os.getenv("GOOGLE_MAPS_API_KEY")
         self.base_url = "https://maps.googleapis.com/maps/api/place"
     
-    def nearby_search(
-        self,
-        location: Location,
-        radius: float = 5000,  # meters
-        place_type: Optional[str] = None,
-        keyword: Optional[str] = None
-    ) -> List[Place]:
+    def nearby_search(self, lat: float, lng: float, radius: float, place_type: str = None, keyword: str = None) -> List[Place]:
         """
-        Search for places near a location
+        Search for nearby places using Google Places API
         
         Args:
-            location: Lat/lng coordinates
-            radius: Search radius in meters (max 50000)
-            place_type: Type of place (restaurant, cafe, park, etc.)
-            keyword: Search keyword
-        
+            lat: Latitude
+            lng: Longitude
+            radius: Search radius in kilometers
+            place_type: Type of place to search for
+            keyword: Keyword to search for
+            
         Returns:
             List of Place objects
         """
@@ -36,8 +31,8 @@ class GooglePlacesAPI:
         url = f"{self.base_url}/nearbysearch/json"
         
         params = {
-            "location": f"{location.lat},{location.lng}",
-            "radius": min(radius, 50000),
+            "location": f"{lat},{lng}",
+            "radius": min(radius * 1000, 50000),  # Convert km to meters
             "key": self.api_key
         }
         
@@ -50,23 +45,45 @@ class GooglePlacesAPI:
         print(f"  Location: {params['location']}")
         print(f"  Radius: {params['radius']} meters")
         
+        places = []
+        max_pages = 3  # Fetch up to 3 pages (60 results total)
+        page_count = 0
+        next_page_token = None
+        
         try:
-            response = requests.get(url, params=params)
-            response.raise_for_status()
-            data = response.json()
+            while page_count < max_pages:
+                # Add page token if we have one
+                if next_page_token:
+                    params['pagetoken'] = next_page_token
+                    # Google requires a short delay before using page token
+                    import time
+                    time.sleep(2)
+                
+                response = requests.get(url, params=params)
+                response.raise_for_status()
+                data = response.json()
+                
+                print(f"Google Places API Response Status (page {page_count + 1}): {data.get('status')}")
+                if data.get('status') != 'OK' and data.get('status') != 'ZERO_RESULTS':
+                    print(f"Google Places API Error: {data.get('error_message', 'Unknown error')}")
+                    print(f"Full response: {data}")
+                    break
+                
+                # Parse results from this page
+                for result in data.get("results", []):
+                    place = self._parse_place(result)
+                    if place:
+                        places.append(place)
+                
+                # Check if there's a next page
+                next_page_token = data.get('next_page_token')
+                page_count += 1
+                
+                if not next_page_token:
+                    print(f"  No more pages available (fetched {page_count} pages)")
+                    break
             
-            print(f"Google Places API Response Status: {data.get('status')}")
-            if data.get('status') != 'OK':
-                print(f"Google Places API Error: {data.get('error_message', 'Unknown error')}")
-                print(f"Full response: {data}")
-                return []
-            
-            places = []
-            for result in data.get("results", []):  # Get all results
-                place = self._parse_place(result)
-                if place:
-                    places.append(place)
-            
+            print(f"Total places fetched: {len(places)} from {page_count} pages")
             return places
         
         except requests.RequestException as e:

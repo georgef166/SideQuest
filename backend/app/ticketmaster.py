@@ -13,8 +13,9 @@ class TicketmasterAPI:
     
     def search_events(
         self,
-        location: Location,
-        radius: int = 25,  # km
+        lat: float,
+        lng: float,
+        radius: float = 25,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         size: int = 20
@@ -23,7 +24,8 @@ class TicketmasterAPI:
         Search for events near a location
         
         Args:
-            location: Lat/lng coordinates
+            lat: Latitude
+            lng: Longitude
             radius: Search radius in km
             start_date: Start date in format YYYY-MM-DDTHH:MM:SSZ
             end_date: End date in format YYYY-MM-DDTHH:MM:SSZ
@@ -36,7 +38,7 @@ class TicketmasterAPI:
         
         params = {
             "apikey": self.api_key,
-            "latlong": f"{location.lat},{location.lng}",
+            "latlong": f"{lat},{lng}",
             "radius": radius,
             "unit": "km",
             "size": min(size, 200),

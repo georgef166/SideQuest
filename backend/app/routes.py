@@ -9,6 +9,9 @@ from app.quest_generator import QuestGenerator
 from app.google_places import GooglePlacesAPI
 from app.ticketmaster import TicketmasterAPI
 from app.email_service import EmailService
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 quest_gen = QuestGenerator()
@@ -18,193 +21,156 @@ email_service = EmailService()
 
 @router.post("/places/nearby", response_model=List[Place])
 async def get_nearby_places(request: NearbyPlacesRequest):
-    """
-    Get nearby places (restaurants, cafes, parks, etc.)
-    
-    Args:
-        request: Request containing location, radius, filters
-    
-    Returns:
-        List of Place objects with details
-    """
-    try:
-        radius_m = request.radius_km * 1000
-        places = places_api.nearby_search(
-            request.location, 
-            radius=radius_m,
-            place_type=request.place_type,
-            keyword=request.keyword
-        )
-        return places
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching places: {str(e)}")
+    """Get nearby places using Google Places API"""
+    return places_api.nearby_search(
+        request.latitude,
+        request.longitude,
+        request.radius,
+        request.type
+    )
 
 @router.post("/events/nearby", response_model=List[Event])
 async def get_nearby_events(request: NearbyEventsRequest):
-    """
-    Get nearby events (concerts, sports, shows, etc.)
-    
-    Args:
-        request: Request containing location, radius, date filters
-    
-    Returns:
-        List of Event objects with details
-    """
-    try:
-        events = events_api.search_events(
-            request.location,
-            radius=int(request.radius_km),
-            start_date=request.start_date,
-            end_date=request.end_date
-        )
-        return events
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching events: {str(e)}")
+    """Get nearby events using Ticketmaster API"""
+    return events_api.search_events(
+        request.latitude,
+        request.longitude,
+        request.radius,
+        request.start_date,
+        request.end_date
+    )
 
 @router.post("/quests/generate", response_model=List[Quest])
 async def generate_quests(request: GenerateQuestsRequest):
-    """
-    Generate personalized quests based on location and preferences
+    """Generate personalized quests based on user preferences"""
+    # Fetch nearby places
+    places = places_api.nearby_search(
+        request.location.lat,
+        request.location.lng,
+        request.radius_km
+    )
     
-    Args:
-        request: Request containing location, radius, categories, and preferences
+    # Fetch nearby events
+    events = events_api.search_events(
+        request.location.lat,
+        request.location.lng,
+        request.radius_km
+    )
     
-    Returns:
-        List of generated Quest objects
-    """
-    try:
-        print(f"\n=== QUEST GENERATION REQUEST ===")
-        print(f"Location: {request.location.lat}, {request.location.lng}")
-        print(f"Radius: {request.radius_km} km ({request.radius_km * 1000} meters)")
-        
-        # Fetch nearby places
-        radius_m = request.radius_km * 1000
-        print(f"\nFetching places from Google Places API...")
-        places = places_api.nearby_search(request.location, radius=radius_m)
-        print(f"Found {len(places)} places")
-        if places:
-            for i, place in enumerate(places[:3], 1):
-                print(f"  {i}. {place.name} - {place.category}")
-        
-        # Fetch nearby events
-        print(f"\nFetching events from Ticketmaster API...")
-        events = events_api.search_events(request.location, radius=int(request.radius_km))
-        print(f"Found {len(events)} events")
-        if events:
-            for i, event in enumerate(events[:3], 1):
-                print(f"  {i}. {event.name}")
-        
-        # Generate quests
-        print(f"\nGenerating quests...")
-        quests = quest_gen.generate_quests(
-            places=places,
-            events=events,
-            user_location=request.location,
-            preferences={**(request.preferences or {}), 'radius_km': request.radius_km}
-        )
-        print(f"Generated {len(quests)} quests")
-        for i, quest in enumerate(quests, 1):
-            dist = f"{quest.distance:.1f}km" if hasattr(quest, 'distance') and quest.distance else "unknown"
-            print(f"  {i}. {quest.title} - {dist}")
-        print(f"=== END QUEST GENERATION ===\n")
-        
-        return quests
+    # Generate quests
+    quests = quest_gen.generate_quests(
+        places=places,
+        events=events,
+        user_location=request.location,
+        preferences={
+            "categories": request.categories,
+            "radius_km": request.radius_km
+        }
+    )
     
-    except Exception as e:
-        import traceback
-        print(f"Error generating quests: {str(e)}")
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error generating quests: {str(e)}")
+    return quests
 
-@router.post("/favorites", response_model=dict)
+# In-memory storage for favorites and completions
+favorites_db: List[Favorite] = []
+completions_db: List[QuestCompletion] = []
+
+@router.post("/favorites/add")
 async def add_favorite(favorite: Favorite):
-    """Add a place, event, or quest to user favorites"""
-    # TODO: Store in Firestore or database
-    return {"message": "Favorite added", "favorite_id": favorite.item_id}
+    """Add a quest or place to favorites"""
+    # Check if already favorited
+    existing = next(
+        (f for f in favorites_db if f.user_id == favorite.user_id and f.item_id == favorite.item_id),
+        None
+    )
+    if existing:
+        raise HTTPException(status_code=400, detail="Item already in favorites")
+    
+    favorites_db.append(favorite)
+    return {"message": "Added to favorites", "favorite": favorite}
 
 @router.get("/favorites/{user_id}", response_model=List[Favorite])
 async def get_favorites(user_id: str):
     """Get all favorites for a user"""
-    # TODO: Fetch from Firestore or database
-    return []
+    return [f for f in favorites_db if f.user_id == user_id]
 
 @router.delete("/favorites/{user_id}/{item_id}")
 async def remove_favorite(user_id: str, item_id: str):
-    """Remove a favorite"""
-    # TODO: Delete from Firestore or database
-    return {"message": "Favorite removed"}
+    """Remove an item from favorites"""
+    global favorites_db
+    initial_length = len(favorites_db)
+    favorites_db = [f for f in favorites_db if not (f.user_id == user_id and f.item_id == item_id)]
+    
+    if len(favorites_db) == initial_length:
+        raise HTTPException(status_code=404, detail="Favorite not found")
+    
+    return {"message": "Removed from favorites"}
 
-@router.post("/quests/complete", response_model=dict)
+@router.post("/quests/complete")
 async def complete_quest(completion: QuestCompletion):
     """Mark a quest as completed"""
-    # TODO: Store completion in Firestore or database
-    xp_earned = 100  # Base XP
+    completions_db.append(completion)
+    
+    # Calculate XP earned (base 100 + rating bonus)
+    xp_earned = 100
+    if completion.rating:
+        xp_earned += completion.rating * 20
+    
     return {
         "message": "Quest completed!",
         "xp_earned": xp_earned,
-        "completion_id": f"{completion.user_id}_{completion.quest_id}"
+        "completion": completion
     }
 
-@router.get("/places/{place_id}")
-async def get_place_details(place_id: str):
-    """Get detailed information about a specific place"""
-    details = places_api.get_place_details(place_id)
-    if not details:
-        raise HTTPException(status_code=404, detail="Place not found")
-    return details
+@router.get("/quests/completions/{user_id}", response_model=List[QuestCompletion])
+async def get_completions(user_id: str):
+    """Get all completed quests for a user"""
+    return [c for c in completions_db if c.user_id == user_id]
 
-
-# === Friends System API ===
+# Friends System
 import uuid
 
-# Mock Databases for Friends System
-friends_db = {}  # user_id -> List[Friend]
-friend_requests_db = []  # List[FriendRequest]
-messages_db = []  # List[Message]
-quest_invites_db = []  # List[QuestInvite]
+friends_db: List[Friend] = []
+friend_requests_db: List[FriendRequest] = []
+messages_db: List[Message] = []
+quest_invites_db: List[QuestInvite] = []
 
 @router.post("/friends/request", response_model=FriendRequest)
 async def send_friend_request(request: FriendRequest):
     """Send a friend request"""
-    # Simulate DB storage
+    # Auto-accept for demo purposes
     request.request_id = str(uuid.uuid4())
     request.created_at = datetime.now()
     friend_requests_db.append(request)
     
-    # Auto-accept for demo purposes
-    friend_entry = Friend(
+    # Auto-create friendship
+    friend = Friend(
         user_id=request.sender_id,
-        friend_id="mock_id_" + request.receiver_email,
-        friend_email=request.receiver_email,
+        friend_id=str(uuid.uuid4()), # Generate a temporary ID for demo
         friend_name=request.receiver_email.split('@')[0],
-        friend_photo=None,
+        friend_email=request.receiver_email,
         added_at=datetime.now()
     )
-    if request.sender_id not in friends_db:
-        friends_db[request.sender_id] = []
+    friends_db.append(friend)
     
-    # Check if friend already exists to avoid duplicates in demo
-    existing = [f for f in friends_db[request.sender_id] if f.friend_email == request.receiver_email]
-    if not existing:
-        friends_db[request.sender_id].append(friend_entry)
-        
-        # Send email notification
-        # Use sender_id as name for now since we don't have a user DB lookup yet
-        email_service.send_friend_request_email(request.receiver_email, sender_name="A SideQuest User")
-        
-        # Also add independent mock friend entry for the receiver (mocked)
-        # But since we don't have receiver's ID easily for this mock without a user DB, we skip bidirectional for now
+    # Send email notification
+    try:
+        email_service.send_friend_request_email(
+            to_email=request.receiver_email,
+            sender_name=request.sender_name
+        )
+    except Exception as e:
+        logger.warning(f"Failed to send friend request email: {str(e)}")
     
     return request
 
 @router.get("/friends/{user_id}", response_model=List[Friend])
 async def get_friends(user_id: str):
-    """Get list of friends"""
-    return friends_db.get(user_id, [])
+    """Get all friends for a user"""
+    return [f for f in friends_db if f.user_id == user_id]
 
 @router.post("/messages/send", response_model=Message)
 async def send_message(message: Message):
-    """Send a direct message"""
+    """Send a direct message to a friend"""
     message.message_id = str(uuid.uuid4())
     message.timestamp = datetime.now()
     messages_db.append(message)
@@ -212,7 +178,7 @@ async def send_message(message: Message):
 
 @router.get("/messages/{user_id}/{friend_id}", response_model=List[Message])
 async def get_messages(user_id: str, friend_id: str):
-    """Get conversation history"""
+    """Get message history between two users"""
     return [
         m for m in messages_db 
         if (m.sender_id == user_id and m.receiver_id == friend_id) or 

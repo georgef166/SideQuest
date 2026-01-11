@@ -67,7 +67,7 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ title, children }: SectionHeaderProps) {
   return (
-    <div className="mb-6">
+    <div className="mb-8 bg-white rounded-lg p-6 border border-gray-200">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
       {children}
     </div>
@@ -156,13 +156,13 @@ export function CheckboxGroup({ options, selected, onChange, disabled }: Checkbo
   return (
     <div className="space-y-3">
       {options.map((option) => (
-        <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+        <label key={option.value} className={`flex items-center gap-3 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
           <input
             type="checkbox"
             checked={selected.includes(option.value)}
             onChange={() => toggleOption(option.value)}
             disabled={disabled}
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+            className="w-4 h-4 rounded border border-gray-300 text-[#4A295F] cursor-pointer accent-[#4A295F]"
           />
           <span className="text-sm text-black">{option.label}</span>
         </label>
@@ -189,7 +189,7 @@ export function RadioGroup({ options, selected, onChange, disabled }: RadioGroup
             checked={selected === option.value}
             onChange={() => onChange(option.value)}
             disabled={disabled}
-            className="w-4 h-4 text-blue-600 cursor-pointer"
+            className="w-4 h-4 accent-[#4A295F] cursor-pointer"
           />
           <span className="text-sm text-black">{option.label}</span>
         </label>
@@ -223,7 +223,7 @@ export function PillSelect({ options, selected, onChange, disabled }: PillSelect
           className={`
             px-3 py-2 rounded-full text-sm font-medium transition-colors
             ${selected.includes(option.value)
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#4A295F] text-white'
               : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}

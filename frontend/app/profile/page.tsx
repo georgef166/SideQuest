@@ -9,6 +9,7 @@ import { getUserPreferences } from '@/lib/preferences';
 import { getProfileByUid } from '@/lib/profileService';
 import { UserProfile } from '@/lib/profileTypes';
 import AuthButton from '@/components/AuthButton';
+import Navbar from '@/components/Navbar';
 
 type SectionId = 'overview' | 'personal_info' | 'achievements' | 'preferences' | 'stats';
 
@@ -249,6 +250,86 @@ function ProfilePageContent() {
           </div>
         </div>
       </div>
+
+      <div className="bg-purple-50 rounded-lg p-6 border border-purple-200 mt-6">
+        <h4 className="font-semibold text-[#4A295F] mb-4">Transportation & Accessibility</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Transportation</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.lifestyle?.transportation?.length ? (
+                userProfile.lifestyle.transportation.map((t) => (
+                  <span key={t} className="px-2 py-1 bg-white text-[#4A295F] text-xs rounded border border-purple-100 capitalize">
+                    {t}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Accessibility Needs</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.preferences?.accessibilityNeeds?.length ? (
+                userProfile.preferences.accessibilityNeeds.map((a) => (
+                  <span key={a} className="px-2 py-1 bg-white text-[#4A295F] text-xs rounded border border-purple-100">
+                    {a}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-purple-50 rounded-lg p-6 border border-purple-200 mt-6">
+        <h4 className="font-semibold text-[#4A295F] mb-4">Preferences</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Energy Level</p>
+            <div className="text-sm text-gray-700 capitalize">
+              {userProfile?.preferences?.energyLevel || 'Not set'}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Time Preference</p>
+            <div className="text-sm text-gray-700 capitalize">
+              {userProfile?.preferences?.timePreference || 'Not set'}
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Favorite Categories</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.preferences?.favoriteCategories?.length ? (
+                userProfile.preferences.favoriteCategories.map((c) => (
+                  <span key={c} className="px-3 py-1 bg-[#4A295F] text-white text-xs rounded-full font-medium capitalize">
+                    {c}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Social Comfort</p>
+            <div className="flex flex-wrap gap-2">
+              {userProfile?.preferences?.socialComfort?.length ? (
+                userProfile.preferences.socialComfort.map((s) => (
+                  <span key={s} className="px-2 py-1 bg-white text-[#4A295F] text-xs rounded border border-purple-100">
+                    {s}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">Not set</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -424,61 +505,7 @@ function ProfilePageContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-3 items-center h-20 gap-4">
-            {/* Left: Logo */}
-            <div>
-              <button
-                onClick={() => router.push('/')}
-                className="text-2xl text-[#4A295F] hover:text-purple-900 transition cursor-pointer"
-                style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}
-              >
-                SideQuest
-              </button>
-            </div>
-
-            {/* Center: Nav Links */}
-            {user && (
-              <div className="flex justify-center gap-8">
-                <button
-                  onClick={() => router.push('/')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() => router.push('/favorites')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Favorites
-                </button>
-                <button
-                  onClick={() => router.push('/friends')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Friends
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Profile
-                </button>
-              </div>
-            )}
-
-            {/* Right: Auth Actions */}
-            <div className="flex justify-end">
-              <AuthButton />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {user ? (
@@ -501,7 +528,7 @@ function ProfilePageContent() {
               <h2 className="section-title text-[#4A295F]">
                 {user.displayName || 'Adventurer'}
               </h2>
-              <p className="text-sm subtitle" style={{ fontWeight: 500, color: '#666' }}>{user.email}</p>
+              <p className="text-sm subtitle" style={{ fontWeight: 500, color: '#000000' }}>{user.email}</p>
             </div>
 
             {loadingData ? (
@@ -553,7 +580,7 @@ function ProfilePageContent() {
               <h1 className="page-title text-[#4A295F] text-center">
                 Sign in to view your profile
               </h1>
-              <p className="text-lg subtitle mt-4" style={{ fontWeight: 500, color: '#4B5563' }}>
+              <p className="text-lg subtitle mt-4" style={{ fontWeight: 500, color: '#000000' }}>
                 Track your quest completions, XP, and achievements
               </p>
               <AuthButton />

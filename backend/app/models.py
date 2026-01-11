@@ -103,6 +103,7 @@ class GenerateQuestsRequest(BaseModel):
 class FriendRequest(BaseModel):
     request_id: Optional[str] = None
     sender_id: str
+    sender_name: Optional[str] = "A user"
     receiver_email: str
     status: str = "pending"  # pending, accepted, rejected
     created_at: Optional[datetime] = None

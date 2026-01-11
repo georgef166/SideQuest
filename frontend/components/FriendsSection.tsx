@@ -5,6 +5,8 @@ import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
 import AddFriendModal from './AddFriendModal';
 import ChatWindow from './ChatWindow';
+import InviteToQuestModal from './InviteToQuestModal';
+import { Quest } from '@/lib/types';
 
 interface Friend {
     user_id: string;
@@ -21,6 +23,9 @@ export default function FriendsSection() {
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [activeChat, setActiveChat] = useState<Friend | null>(null);
+    const [invitingFriend, setInvitingFriend] = useState<Friend | null>(null);
+    const [quests, setQuests] = useState<Quest[]>([]);
+    const [loadingQuests, setLoadingQuests] = useState(false);
 
     const fetchFriends = async () => {
         if (!user) return;
@@ -36,7 +41,23 @@ export default function FriendsSection() {
 
     useEffect(() => {
         fetchFriends();
+        loadLocalQuests();
     }, [user]);
+
+    const loadLocalQuests = () => {
+        const stored = localStorage.getItem('currentQuests');
+        if (stored) {
+            setQuests(JSON.parse(stored));
+        }
+    };
+
+    const handleInviteClick = (friend: Friend) => {
+        if (quests.length === 0) {
+            alert('No quests found to invite to. Try discovering some quests first!');
+            return;
+        }
+        setInvitingFriend(friend);
+    };
 
     if (loading) {
         return <div className="p-8 text-center text-gray-500">Loading friends...</div>;
@@ -102,8 +123,8 @@ export default function FriendsSection() {
                                     Message
                                 </button>
                                 <button
-                                    onClick={() => alert('Quest invites coming soon!')}
-                                    className="flex-1 px-4 py-2 bg-[#4A295F]/10 text-[#4A295F] font-medium rounded-lg hover:bg-[#4A295F]/20 transition"
+                                    onClick={() => handleInviteClick(friend)}
+                                    className="flex-1 px-4 py-2 bg-[#4A295F]/10 text-[#4A295F] font-bold rounded-lg hover:bg-[#4A295F]/20 transition"
                                 >
                                     Invite
                                 </button>
@@ -125,6 +146,14 @@ export default function FriendsSection() {
                     friendId={activeChat.friend_id}
                     friendName={activeChat.friend_name || activeChat.friend_email}
                     onClose={() => setActiveChat(null)}
+                />
+            )}
+
+            {invitingFriend && (
+                <InviteToQuestModal
+                    friend={invitingFriend}
+                    quests={quests}
+                    onClose={() => setInvitingFriend(null)}
                 />
             )}
         </div>

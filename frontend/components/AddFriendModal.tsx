@@ -24,6 +24,7 @@ export default function AddFriendModal({ onClose, onSuccess }: AddFriendModalPro
         try {
             await apiClient.post('/api/friends/request', {
                 sender_id: user.uid,
+                sender_name: user.displayName || user.email?.split('@')[0] || 'A user',
                 receiver_email: email
             });
             showToast('Friend request sent!', 'success');
