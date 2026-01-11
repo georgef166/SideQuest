@@ -15,7 +15,7 @@ export default function QuestDetailPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const questId = params.id as string;
-  
+
   const [quest, setQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
@@ -35,7 +35,7 @@ export default function QuestDetailPage() {
       const quests: Quest[] = JSON.parse(storedQuests);
       const foundQuest = quests.find(q => q.quest_id === questId);
       setQuest(foundQuest || null);
-      
+
       // Load addresses for all steps
       if (foundQuest) {
         foundQuest.steps.forEach(async (step) => {
@@ -255,8 +255,8 @@ export default function QuestDetailPage() {
             </div>
             <div className="text-center">
               <div className="text-3xl mb-1">
-                {quest.difficulty === 'low_energy' ? '😌' : 
-                 quest.difficulty === 'medium_energy' ? '🚶' : '🏃'}
+                {quest.difficulty === 'low_energy' ? '😌' :
+                  quest.difficulty === 'medium_energy' ? '🚶' : '🏃'}
               </div>
               <div className="text-lg font-bold text-gray-800 capitalize">
                 {quest.difficulty.replace('_', ' ')}
@@ -278,7 +278,7 @@ export default function QuestDetailPage() {
         {/* Quest Steps */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-6 border border-gray-200">
           <h2 className="text-2xl font-bold text-[#4A295F] mb-6">Your Adventure Steps</h2>
-          
+
           <div className="space-y-6">
             {quest.steps.map((step, index) => (
               <div key={step.order} className="flex gap-4">
@@ -362,7 +362,7 @@ export default function QuestDetailPage() {
               Share Quest
             </button>
           </div>
-          
+
           {!user && (
             <p className="mt-3 text-sm text-gray-500 text-center">
               Sign in to save favorites and track completions
@@ -407,7 +407,7 @@ export default function QuestDetailPage() {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowRating(false)}>
               <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
                 <h3 className="text-2xl font-bold text-gray-800 mb-4">Rate Your Quest</h3>
-                
+
                 <div className="mb-6">
                   <p className="text-sm text-gray-600 mb-3">How was your experience?</p>
                   <div className="flex gap-2 justify-center">
@@ -439,7 +439,7 @@ export default function QuestDetailPage() {
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
                     placeholder="Share your thoughts..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     rows={3}
                   />
                 </div>
@@ -462,10 +462,10 @@ export default function QuestDetailPage() {
               </div>
             </div>
           )}
-          
+
           <div className="mt-4 text-center">
             <button className="text-gray-600 hover:text-gray-800 text-sm">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>

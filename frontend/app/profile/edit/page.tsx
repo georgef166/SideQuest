@@ -236,7 +236,7 @@ export default function EditProfilePage() {
                 onChange={(e) =>
                   handleFormChange('profile', 'legalName', e.target.value)
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 placeholder="Enter your legal name"
               />
             </FormField>
@@ -248,7 +248,7 @@ export default function EditProfilePage() {
                 onChange={(e) =>
                   handleFormChange('profile', 'preferredName', e.target.value)
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 placeholder="How you'd like to be called"
               />
             </FormField>
@@ -264,7 +264,7 @@ export default function EditProfilePage() {
                     handleFormChange('profile', 'aboutMe', e.target.value)
                   }
                   maxLength={160}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-black"
                   placeholder="Tell us about yourself (max 160 characters)"
                   rows={3}
                 />
@@ -299,7 +299,7 @@ export default function EditProfilePage() {
                     onChange={(e) =>
                       handleFormChange('profile', 'photoURL', e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                     placeholder="https://example.com/photo.jpg"
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -321,7 +321,7 @@ export default function EditProfilePage() {
                 onChange={(e) =>
                   handleFormChange('lifestyle', 'location', e.target.value)
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 placeholder="City, Province"
               />
             </FormField>
@@ -333,7 +333,7 @@ export default function EditProfilePage() {
                 onChange={(e) =>
                   handleFormChange('lifestyle', 'education', e.target.value)
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 placeholder="School or University"
               />
             </FormField>
@@ -345,7 +345,7 @@ export default function EditProfilePage() {
                 onChange={(e) =>
                   handleFormChange('lifestyle', 'work', e.target.value)
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 placeholder="Job title and company"
               />
             </FormField>
@@ -402,7 +402,7 @@ export default function EditProfilePage() {
                         .filter((v) => v.length > 0)
                     )
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                   placeholder="e.g., vegetarian, vegan, gluten-free (comma separated)"
                 />
               </FormField>
@@ -493,11 +493,10 @@ export default function EditProfilePage() {
       {/* Toast Notification */}
       {toastMessage && (
         <div
-          className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg text-white font-medium ${
-            toastMessage.type === 'success'
+          className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg text-white font-medium ${toastMessage.type === 'success'
               ? 'bg-green-600'
               : 'bg-red-600'
-          } shadow-lg`}
+            } shadow-lg`}
         >
           {toastMessage.type === 'success' ? 'Success' : 'Error'}: {toastMessage.message}
         </div>

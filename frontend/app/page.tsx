@@ -1,5 +1,6 @@
 'use client';
 
+import EmailPasswordAuth from '@/components/EmailPasswordAuth';
 import { useState, useEffect, useRef } from 'react';
 // TypeScript: declare window.google for Google Maps
 declare global {
@@ -495,7 +496,7 @@ export default function Home() {
 
             {/* Right: Auth Actions */}
             <div className="flex justify-end">
-              <AuthButton />
+              {user && <AuthButton />}
             </div>
           </div>
         </div>
@@ -505,18 +506,6 @@ export default function Home() {
         {user ? (
           <div>
             <div className="mb-12">
-              {/* Location Search Bar (Google Places Autocomplete) */}
-              <div className="mb-4">
-                <input
-                  ref={locationInputRef}
-                  type="text"
-                  placeholder="Search for a location (address, city, landmark)"
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all mb-2"
-                  style={{ borderColor: '#4A295F', backgroundColor: '#f9f9fb' }}
-                  autoComplete="off"
-                />
-                <p className="text-xs text-gray-500 mt-1">Start typing to search for a new location. Powered by Google Places.</p>
-              </div>
               <h2 className="text-4xl font-bold text-[#4A295F] mb-2">
                 Discover Your Next Adventure
               </h2>
@@ -552,7 +541,7 @@ export default function Home() {
                   placeholder="Search events, places, or categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all text-gray-900"
+                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all text-black"
                   style={{
                     borderColor: searchQuery ? '#4A295F' : '#d1d5db',
                     backgroundColor: '#ffffff',
@@ -673,7 +662,7 @@ export default function Home() {
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A295F] text-sm bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A295F] text-sm bg-white text-black"
                     >
                       <option value="distance-asc">Distance: Nearest First</option>
                       <option value="distance-desc">Distance: Farthest First</option>
@@ -952,12 +941,10 @@ export default function Home() {
                 </ul>
               </div>
 
-              <div className="mb-6">
-                <AuthButton />
-              </div>
+              <EmailPasswordAuth />
 
-              <p className="text-sm text-gray-500">
-                Sign in to start your adventure
+              <p className="text-sm text-gray-500 mt-6">
+                By signing in, you agree to our Terms of Service and Privacy Policy
               </p>
             </div>
           </div>
