@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/useAuth';
 import { completeQuest } from '@/lib/completions';
 import { addToFavorites, removeFromFavorites, getFavorites } from '@/lib/favorites';
 import { useToast } from '@/lib/toast';
-import { reverseGeocode, formatAddress } from '@/lib/geocoding';
+import LocationDisplay from '@/components/LocationDisplay';
 
 export default function QuestDetailPage() {
   const params = useParams();
@@ -25,7 +25,6 @@ export default function QuestDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [togglingFavorite, setTogglingFavorite] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const [stepAddresses, setStepAddresses] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
     // For now, we'll retrieve the quest from localStorage
@@ -36,13 +35,7 @@ export default function QuestDetailPage() {
       const foundQuest = quests.find(q => q.quest_id === questId);
       setQuest(foundQuest || null);
 
-      // Load addresses for all steps
-      if (foundQuest) {
-        foundQuest.steps.forEach(async (step) => {
-          const address = await reverseGeocode(step.location.lat, step.location.lng);
-          setStepAddresses(prev => ({ ...prev, [step.order]: formatAddress(address) }));
-        });
-      }
+
     }
     setLoading(false);
 
@@ -242,22 +235,14 @@ export default function QuestDetailPage() {
           {/* Quest Stats */}
           <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
             <div className="text-center">
-              <div className="text-3xl mb-1">⏱️</div>
               <div className="text-2xl font-bold text-gray-800">{totalTime} min</div>
               <div className="text-sm text-gray-600">Total Time</div>
             </div>
             <div className="text-center">
-              <svg className="w-8 h-8 text-green-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
               <div className="text-2xl font-bold text-gray-800">${totalCost.toFixed(0)}</div>
               <div className="text-sm text-gray-600">Estimated Cost</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl mb-1">
-                {quest.difficulty === 'low_energy' ? '😌' :
-                  quest.difficulty === 'medium_energy' ? '🚶' : '🏃'}
-              </div>
               <div className="text-lg font-bold text-gray-800 capitalize">
                 {quest.difficulty.replace('_', ' ')}
               </div>
@@ -315,7 +300,7 @@ export default function QuestDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       <span className="flex-1">
-                        {stepAddresses[step.order] || 'Loading address...'}
+                        <LocationDisplay lat={step.location.lat} lng={step.location.lng} />
                       </span>
                     </div>
                   </div>

@@ -11,7 +11,7 @@ interface DualRangeSliderProps {
 
 export default function DualRangeSlider({ min, max, value, onChange }: DualRangeSliderProps) {
   return (
-    <div className="px-2">
+    <div className="px-2 w-full touch-none">
       <Range
         values={value}
         step={1}

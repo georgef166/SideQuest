@@ -1,6 +1,7 @@
 'use client';
 
 import EmailPasswordAuth from '@/components/EmailPasswordAuth';
+import LocationDisplay from '@/components/LocationDisplay';
 import { useState, useEffect, useRef } from 'react';
 // TypeScript: declare window.google for Google Maps
 declare global {
@@ -64,43 +65,7 @@ export default function Home() {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loadingQuests, setLoadingQuests] = useState(false);
   const [userLocation, setUserLocation] = useState<Location | null>(null);
-  const [userAddress, setUserAddress] = useState<string>('');
   const [locationError, setLocationError] = useState<string>('');
-
-  // Reverse geocoding effect
-  useEffect(() => {
-    if (!userLocation || !window.google || !window.google.maps) return;
-
-    const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ location: userLocation }, (results: any, status: any) => {
-      if (status === 'OK' && results[0]) {
-        // Find locality (city), admin area (province), and postal code
-        let city = '';
-        let province = '';
-        let postalCode = '';
-
-        for (const component of results[0].address_components) {
-          const types = component.types;
-          if (types.includes('locality')) {
-            city = component.long_name;
-          } else if (types.includes('administrative_area_level_1')) {
-            province = component.short_name; // Use short name (e.g., ON)
-          } else if (types.includes('postal_code')) {
-            postalCode = component.long_name;
-          }
-        }
-
-        // Construct formatted address
-        const parts = [city, province, postalCode].filter(part => part);
-        if (parts.length > 0) {
-          setUserAddress(parts.join(', '));
-        } else {
-          // Fallback to formatted address if specific components not found
-          setUserAddress(results[0].formatted_address);
-        }
-      }
-    });
-  }, [userLocation]);
   const [questError, setQuestError] = useState<string>('');
   const [mapInitialized, setMapInitialized] = useState(false);
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
@@ -551,7 +516,7 @@ export default function Home() {
               {userLocation && (
                 <div className="p-3 bg-gray-50 rounded-lg mx-auto block w-fit mb-4" style={{ marginTop: '1rem' }}>
                   <p className="text-sm text-gray-700">
-                    <strong>Location:</strong> {userAddress ? `${userAddress} (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})` : `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`}
+                    <strong>Location:</strong> <LocationDisplay lat={userLocation.lat} lng={userLocation.lng} />
                   </p>
                 </div>
               )}
