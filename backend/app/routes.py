@@ -2,17 +2,19 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
 from datetime import datetime
 from app.models import (
-    Quest, Location, UserPreferences, Favorite, QuestCompletion, 
-    Place, Event, NearbyPlacesRequest, NearbyEventsRequest, GenerateQuestsRequest
+    Place, Event, NearbyPlacesRequest, NearbyEventsRequest, GenerateQuestsRequest, Quest, Favorite, QuestCompletion,
+    FriendRequest, Friend, Message, QuestInvite
 )
 from app.quest_generator import QuestGenerator
 from app.google_places import GooglePlacesAPI
 from app.ticketmaster import TicketmasterAPI
+from app.email_service import EmailService
 
 router = APIRouter()
 quest_gen = QuestGenerator()
 places_api = GooglePlacesAPI()
 events_api = TicketmasterAPI()
+email_service = EmailService()
 
 @router.post("/places/nearby", response_model=List[Place])
 async def get_nearby_places(request: NearbyPlacesRequest):
@@ -150,3 +152,79 @@ async def get_place_details(place_id: str):
     if not details:
         raise HTTPException(status_code=404, detail="Place not found")
     return details
+
+
+# === Friends System API ===
+import uuid
+
+# Mock Databases for Friends System
+friends_db = {}  # user_id -> List[Friend]
+friend_requests_db = []  # List[FriendRequest]
+messages_db = []  # List[Message]
+quest_invites_db = []  # List[QuestInvite]
+
+@router.post("/friends/request", response_model=FriendRequest)
+async def send_friend_request(request: FriendRequest):
+    """Send a friend request"""
+    # Simulate DB storage
+    request.request_id = str(uuid.uuid4())
+    request.created_at = datetime.now()
+    friend_requests_db.append(request)
+    
+    # Auto-accept for demo purposes
+    friend_entry = Friend(
+        user_id=request.sender_id,
+        friend_id="mock_id_" + request.receiver_email,
+        friend_email=request.receiver_email,
+        friend_name=request.receiver_email.split('@')[0],
+        friend_photo=None,
+        added_at=datetime.now()
+    )
+    if request.sender_id not in friends_db:
+        friends_db[request.sender_id] = []
+    
+    # Check if friend already exists to avoid duplicates in demo
+    existing = [f for f in friends_db[request.sender_id] if f.friend_email == request.receiver_email]
+    if not existing:
+        friends_db[request.sender_id].append(friend_entry)
+        
+        # Send email notification
+        # Use sender_id as name for now since we don't have a user DB lookup yet
+        email_service.send_friend_request_email(request.receiver_email, sender_name="A SideQuest User")
+        
+        # Also add independent mock friend entry for the receiver (mocked)
+        # But since we don't have receiver's ID easily for this mock without a user DB, we skip bidirectional for now
+    
+    return request
+
+@router.get("/friends/{user_id}", response_model=List[Friend])
+async def get_friends(user_id: str):
+    """Get list of friends"""
+    return friends_db.get(user_id, [])
+
+@router.post("/messages/send", response_model=Message)
+async def send_message(message: Message):
+    """Send a direct message"""
+    message.message_id = str(uuid.uuid4())
+    message.timestamp = datetime.now()
+    messages_db.append(message)
+    return message
+
+@router.get("/messages/{user_id}/{friend_id}", response_model=List[Message])
+async def get_messages(user_id: str, friend_id: str):
+    """Get conversation history"""
+    return [
+        m for m in messages_db 
+        if (m.sender_id == user_id and m.receiver_id == friend_id) or 
+           (m.sender_id == friend_id and m.receiver_id == user_id)
+    ]
+
+@router.post("/quests/invite", response_model=QuestInvite)
+async def invite_friend(invite: QuestInvite):
+    """Invite a friend to a quest"""
+    invite.invite_id = str(uuid.uuid4())
+    invite.created_at = datetime.now()
+    quest_invites_db.append(invite)
+    return invite
+
+

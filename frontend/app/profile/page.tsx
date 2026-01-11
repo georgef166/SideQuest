@@ -324,6 +324,8 @@ function ProfilePageContent() {
     </div>
   );
 
+
+
   const renderPreferencesSection = () => (
     <div className="space-y-6">
       <div className="flex justify-end">
@@ -452,6 +454,13 @@ function ProfilePageContent() {
                   style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
                 >
                   Favorites
+                </button>
+                <button
+                  onClick={() => router.push('/friends')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Friends
                 </button>
                 <button
                   onClick={() => router.push('/profile')}

@@ -493,6 +493,13 @@ export default function Home() {
                   Favorites
                 </button>
                 <button
+                  onClick={() => router.push('/friends')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Friends
+                </button>
+                <button
                   onClick={() => router.push('/profile')}
                   className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
                   style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}

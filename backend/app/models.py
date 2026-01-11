@@ -99,3 +99,34 @@ class GenerateQuestsRequest(BaseModel):
     radius_km: float = 50.0
     categories: Optional[List[str]] = None
     preferences: Optional[dict] = None
+
+class FriendRequest(BaseModel):
+    request_id: Optional[str] = None
+    sender_id: str
+    receiver_email: str
+    status: str = "pending"  # pending, accepted, rejected
+    created_at: Optional[datetime] = None
+
+class Friend(BaseModel):
+    user_id: str
+    friend_id: str
+    friend_email: str
+    friend_name: Optional[str] = None
+    friend_photo: Optional[str] = None
+    added_at: datetime
+
+class Message(BaseModel):
+    message_id: Optional[str] = None
+    sender_id: str
+    receiver_id: str
+    content: str
+    timestamp: Optional[datetime] = None
+    read: bool = False
+
+class QuestInvite(BaseModel):
+    invite_id: Optional[str] = None
+    sender_id: str
+    receiver_id: str
+    quest_id: str
+    status: str = "pending"  # pending, accepted, rejected
+    created_at: Optional[datetime] = None

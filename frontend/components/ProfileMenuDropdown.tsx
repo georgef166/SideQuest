@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { signOut } from '@/lib/auth';
 
 interface MenuItemConfig {
@@ -31,15 +31,20 @@ function ProfileMenuDropdownContent({ photoURL, displayName }: ProfileMenuDropdo
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  // ... (rest of the code) ...
+
+
 
   // Determine which item should be highlighted based on current URL section
   useEffect(() => {
     const currentSection = searchParams?.get('section');
     if (currentSection) {
-      const index = PROFILE_MENU_ITEMS.findIndex(item => item.href.includes(`section=${currentSection}`));
+      const index = PROFILE_MENU_ITEMS.findIndex(item => item.href && item.href.includes(`section=${currentSection}`));
       if (index >= 0) {
         setSelectedIndex(index);
       }
@@ -194,11 +199,10 @@ function ProfileMenuDropdownContent({ photoURL, displayName }: ProfileMenuDropdo
                 }}
                 role="menuitem"
                 onClick={() => handleMenuItemClick(index)}
-                className={`block w-full text-left px-3 py-2.5 font-semibold transition-colors focus:outline-none ${
-                  (focusedIndex === index || selectedIndex === index)
-                    ? 'bg-purple-50 text-[#4A295F] border-l-4 border-l-[#4A295F]'
-                    : 'text-gray-700 hover:bg-gray-50 border-l-4 border-l-transparent'
-                }`}
+                className={`block w-full text-left px-3 py-2.5 font-semibold transition-colors focus:outline-none ${(focusedIndex === index || selectedIndex === index)
+                  ? 'bg-purple-50 text-[#4A295F] border-l-4 border-l-[#4A295F]'
+                  : 'text-gray-700 hover:bg-gray-50 border-l-4 border-l-transparent'
+                  }`}
                 style={{ fontSize: '14px' }}
                 tabIndex={isOpen ? 0 : -1}
               >
@@ -208,15 +212,19 @@ function ProfileMenuDropdownContent({ photoURL, displayName }: ProfileMenuDropdo
               <button
                 key={index}
                 role="menuitem"
-                onClick={() => {
-                  item.onClick?.();
+                onClick={async () => {
+                  if (item.label === 'Sign Out') {
+                    await signOut();
+                    router.push('/');
+                  } else {
+                    item.onClick?.();
+                  }
                   handleMenuItemClick(index);
                 }}
-                className={`w-full text-left px-3 py-2.5 font-semibold transition-colors focus:outline-none ${
-                  (focusedIndex === index || selectedIndex === index)
-                    ? 'bg-purple-50 text-[#4A295F] border-l-4 border-l-[#4A295F]'
-                    : 'text-gray-700 hover:bg-gray-50 border-l-4 border-l-transparent'
-                }`}
+                className={`w-full text-left px-3 py-2.5 font-semibold transition-colors focus:outline-none ${(focusedIndex === index || selectedIndex === index)
+                  ? 'bg-purple-50 text-[#4A295F] border-l-4 border-l-[#4A295F]'
+                  : 'text-gray-700 hover:bg-gray-50 border-l-4 border-l-transparent'
+                  }`}
                 style={{ fontSize: '14px' }}
                 tabIndex={isOpen ? 0 : -1}
               >

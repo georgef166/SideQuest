@@ -96,6 +96,13 @@ export default function FavoritesPage() {
                   Favorites
                 </button>
                 <button
+                  onClick={() => router.push('/friends')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Friends
+                </button>
+                <button
                   onClick={() => router.push('/profile')}
                   className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
                   style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
@@ -185,14 +192,14 @@ export default function FavoritesPage() {
                               'hiking': 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=400&h=300',
                               'adventure': 'https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=400&h=300',
                             };
-                            
+
                             // Check if we have a matching tag image
                             for (const [key, url] of Object.entries(tagImageMap)) {
                               if (tag.includes(key) || quest.title.toLowerCase().includes(key)) {
                                 return url;
                               }
                             }
-                            
+
                             // Fallback to themed random image based on quest_id hash
                             const questHash = quest.quest_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                             const imageIndex = questHash % 20;
@@ -227,7 +234,7 @@ export default function FavoritesPage() {
                           }}
                         />
                       </div>
-                      
+
                       <div className="p-5">
                         <h3 className="text-lg font-bold text-[#4A295F] mb-2">
                           {quest.title}
@@ -271,13 +278,13 @@ export default function FavoritesPage() {
                               // Save quest to localStorage before navigating
                               const storedQuests = localStorage.getItem('currentQuests');
                               let quests = storedQuests ? JSON.parse(storedQuests) : [];
-                              
+
                               // Add this quest if it's not already there
                               if (!quests.find((q: any) => q.quest_id === quest.quest_id)) {
                                 quests.push(quest);
                                 localStorage.setItem('currentQuests', JSON.stringify(quests));
                               }
-                              
+
                               router.push(`/quest/${quest.quest_id}`);
                             }}
                             className="flex-1 px-4 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition text-sm font-medium cursor-pointer"
