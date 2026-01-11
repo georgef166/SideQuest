@@ -87,6 +87,16 @@ class QuestGenerator:
         # Sort by distance (closest first)
         quests.sort(key=lambda q: q.distance if hasattr(q, 'distance') else float('inf'))
         
+        # Remove duplicate quests (same title)
+        seen_titles = set()
+        unique_quests = []
+        for quest in quests:
+            if quest.title not in seen_titles:
+                seen_titles.add(quest.title)
+                unique_quests.append(quest)
+        quests = unique_quests
+        print(f"Removed {len(quests) - len(unique_quests)} duplicate quests")
+        
         # Filter quests within the specified radius range
         radius_km = preferences.get('radius_km')
         min_radius_km = preferences.get('min_radius_km', 0)
@@ -150,10 +160,11 @@ class QuestGenerator:
                     quests.append(quest)
                     print(f"  Created Budget quest")
         
-        # Shopping + Cafe quests (create ALL combinations)
+        # Shopping + Cafe quests (limit combinations to avoid duplicates)
         if len(shops) > 0 and len(cafes) > 0:
-            for i in range(len(shops)):
-                for j in range(len(cafes)):
+            # Only create a few shopping quests, not all combinations
+            for i in range(min(3, len(shops))):
+                for j in range(min(2, len(cafes))):
                     quest = self._create_shopping_quest(shops[i], cafes[j])
                     quests.append(quest)
                     print(f"  Created Shopping quest")
@@ -223,8 +234,9 @@ class QuestGenerator:
             
             # Be more lenient - keep stores that aren't explicitly excluded
             if 'store' in category_lower or 'shop' in category_lower:
-                # Exclude utility stores specifically
-                if not any(skip in name_lower for skip in ['ups', 'fedex', 'postal', 'hardware', 'tire', 'auto']):
+                # Exclude utility stores specifically - check both name and category
+                utility_keywords = ['ups', 'fedex', 'postal', 'hardware', 'tire', 'auto', 'shipping', 'package', 'mail']
+                if not any(skip in name_lower or skip in category_lower for skip in utility_keywords):
                     filtered.append(place)
                     continue
             

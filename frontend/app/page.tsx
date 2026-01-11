@@ -78,29 +78,13 @@ export default function Home() {
   const [togglingFavorite, setTogglingFavorite] = useState<string | null>(null);
 
   const categories = [
-    'Active',
     'Adventure',
-    'Arts',
     'Bar',
-    'Cafe',
-    'Cheap',
-    'Cultural',
-    'Date Ideas',
-    'Dessert',
-    'Entertainment',
-    'Events',
-    'Food',
-    'Hidden Gems',
-    'Live',
-    'Local Favorites',
-    'Music',
+    'Cheap Food',
+    'Hidden Gem',
+    'Local Fav',
     'Nightlife',
-    'Relaxation',
-    'Shopping',
     'Social',
-    'Sports',
-    'Trending',
-    'Urban',
   ];
 
   // Fuzzy search function - checks if query is contained in text (case-insensitive)
@@ -574,40 +558,38 @@ export default function Home() {
                 <label className="text-sm font-medium text-black mb-2 block">
                   Categories
                 </label>
-                <div className="overflow-x-auto scrollbar-hide">
-                  <div className="flex gap-2 pb-2" style={{ width: 'max-content' }}>
-                    {categories.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => {
-                          setSelectedCategories(prev =>
-                            prev.includes(category)
-                              ? prev.filter(c => c !== category)
-                              : [...prev, category]
-                          );
-                        }}
-                        className="px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 shadow-sm"
-                        style={{
-                          backgroundColor: selectedCategories.includes(category) ? '#4A295F' : '#e5e7eb',
-                          color: selectedCategories.includes(category) ? 'white' : '#1f2937',
-                          transform: selectedCategories.includes(category) ? 'scale(1.05)' : 'scale(1)',
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!selectedCategories.includes(category)) {
-                            e.currentTarget.style.backgroundColor = '#d1d5db';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!selectedCategories.includes(category)) {
-                            e.currentTarget.style.backgroundColor = '#e5e7eb';
-                          }
-                        }}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        setSelectedCategories(prev =>
+                          prev.includes(category)
+                            ? prev.filter(c => c !== category)
+                            : [...prev, category]
+                        );
+                      }}
+                      className="px-4 py-2 rounded-full font-medium transition-all duration-200 shadow-sm text-center"
+                      style={{
+                        backgroundColor: selectedCategories.includes(category) ? '#4A295F' : '#e5e7eb',
+                        color: selectedCategories.includes(category) ? 'white' : '#1f2937',
+                        transform: selectedCategories.includes(category) ? 'scale(1.05)' : 'scale(1)',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!selectedCategories.includes(category)) {
+                          e.currentTarget.style.backgroundColor = '#d1d5db';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!selectedCategories.includes(category)) {
+                          e.currentTarget.style.backgroundColor = '#e5e7eb';
+                        }
+                      }}
+                    >
+                      {category}
+                    </button>
+                  ))}
                 </div>
                 {selectedCategories.length > 0 && (
                   <button
@@ -695,19 +677,7 @@ export default function Home() {
                     </select>
                   </div>
 
-                  {quests.length > 0 && !loadingQuests && (
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                      <div className="text-sm text-purple-900">
-                        <strong>Showing {filteredQuests.length} out of {quests.length} activities between {radiusRange[0]}km and {radiusRange[1]}km</strong>
-                        {(searchQuery || selectedCategories.length > 0) && (
-                          <span className="text-xs block mt-1 text-purple-700">
-                            {searchQuery && `Searching: "${searchQuery}"`}
-                            {selectedCategories.length > 0 && ` • ${selectedCategories.length} categories`}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               </div>
             </div>

@@ -31,27 +31,8 @@ export default function LocationDisplay({ lat, lng, className = '', showCoordina
                     if (!isMounted) return;
 
                     if (status === 'OK' && results[0]) {
-                        let city = '';
-                        let province = '';
-                        let postalCode = '';
-
-                        for (const component of results[0].address_components) {
-                            const types = component.types;
-                            if (types.includes('locality')) {
-                                city = component.long_name;
-                            } else if (types.includes('administrative_area_level_1')) {
-                                province = component.short_name; // Use short name (e.g., ON)
-                            } else if (types.includes('postal_code')) {
-                                postalCode = component.long_name;
-                            }
-                        }
-
-                        const parts = [city, province, postalCode].filter(part => part);
-                        if (parts.length > 0) {
-                            setAddress(parts.join(', '));
-                        } else {
-                            setAddress(results[0].formatted_address);
-                        }
+                        // Use the full formatted address
+                        setAddress(results[0].formatted_address);
                     }
                     setLoading(false);
                 });
