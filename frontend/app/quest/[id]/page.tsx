@@ -202,7 +202,7 @@ export default function QuestDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -224,7 +224,7 @@ export default function QuestDetailPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Quest Header */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-6 border border-gray-200">
+        <div className="bg-purple-50 rounded-lg shadow-lg p-8 mb-6 border border-purple-100">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h1 className="text-4xl font-bold text-[#4A295F] mb-2">{quest.title}</h1>
@@ -267,8 +267,8 @@ export default function QuestDetailPage() {
 
           {/* Best Time */}
           {quest.best_time && (
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center">
+              <p className="text-sm text-gray-600">
                 <strong>Best Time:</strong> {quest.best_time}
               </p>
             </div>
@@ -276,7 +276,7 @@ export default function QuestDetailPage() {
         </div>
 
         {/* Quest Steps */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-6 border border-gray-200">
+        <div className="bg-purple-50 rounded-lg shadow-lg p-8 mb-6 border border-purple-100">
           <h2 className="text-2xl font-bold text-[#4A295F] mb-6">Your Adventure Steps</h2>
 
           <div className="space-y-6">
@@ -326,12 +326,12 @@ export default function QuestDetailPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-white rounded-lg shadow-lg p-6 relative">
+        <div className="bg-purple-50 rounded-lg shadow-lg p-6 relative">
           <div className="flex gap-4">
             <button
               onClick={handleCompleteQuest}
               disabled={!user}
-              className="flex-1 px-6 py-4 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -351,7 +351,7 @@ export default function QuestDetailPage() {
             <div className="relative flex-1">
               <button
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="w-full h-full px-6 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2"
+                className="w-full h-full px-6 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />

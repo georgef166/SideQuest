@@ -68,19 +68,13 @@ export default function LocationDisplay({ lat, lng, className = '', showCoordina
         };
     }, [lat, lng]);
 
-    const coordsString = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-
-    if (loading) {
-        return <span className={className}>Loading location...</span>;
-    }
-
     if (!address) {
-        return <span className={className}>{coordsString}</span>;
+        return <span className={className}>Loading address...</span>;
     }
 
     return (
         <span className={className}>
-            {address} {showCoordinates && coordsString}
+            {address}
         </span>
     );
 }
