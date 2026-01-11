@@ -26,8 +26,7 @@ export default function QuestDetailPage() {
   const [togglingFavorite, setTogglingFavorite] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
-  const [reviewsData, setReviewsData] = useState<any>(null);
-  const [loadingReviews, setLoadingReviews] = useState(false);
+
 
   useEffect(() => {
     // For now, we'll retrieve the quest from localStorage
@@ -37,12 +36,6 @@ export default function QuestDetailPage() {
       const quests: Quest[] = JSON.parse(storedQuests);
       const foundQuest = quests.find(q => q.quest_id === questId);
       setQuest(foundQuest || null);
-
-      // Fetch reviews for the destination location
-      if (foundQuest && foundQuest.steps.length > 0) {
-        const lastStep = foundQuest.steps[foundQuest.steps.length - 1];
-        fetchReviews(lastStep.location.lat, lastStep.location.lng);
-      }
     }
     setLoading(false);
 
@@ -59,23 +52,6 @@ export default function QuestDetailPage() {
       setIsFavorite(favorites.some(fav => fav.item_id === questId));
     } catch (error) {
       console.error('Error checking favorite status:', error);
-    }
-  };
-
-  const fetchReviews = async (lat: number, lng: number) => {
-    setLoadingReviews(true);
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/places/reviews/${lat}/${lng}`);
-      if (response.ok) {
-        const data = await response.json();
-        setReviewsData(data);
-      } else {
-        console.error('Failed to fetch reviews');
-      }
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-    } finally {
-      setLoadingReviews(false);
     }
   };
 

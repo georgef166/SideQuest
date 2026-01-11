@@ -9,14 +9,13 @@ from app.quest_generator import QuestGenerator
 from app.google_places import GooglePlacesAPI
 from app.ticketmaster import TicketmasterAPI
 from app.email_service import EmailService
-from app.google_places_reviews import GooglePlacesReviewsService
+from app.email_service import EmailService
 
 router = APIRouter()
 quest_gen = QuestGenerator()
 places_api = GooglePlacesAPI()
 events_api = TicketmasterAPI()
 email_service = EmailService()
-reviews_service = GooglePlacesReviewsService()
 
 @router.post("/places/nearby", response_model=List[Place])
 async def get_nearby_places(request: NearbyPlacesRequest):
@@ -192,11 +191,4 @@ async def invite_friend(invite: QuestInvite):
     quest_invites_db.append(invite)
     return invite
 
-@router.get("/places/reviews/{lat}/{lng}")
-async def get_place_reviews(lat: float, lng: float):
-    """Get Google Places reviews for a location"""
-    try:
-        reviews_data = reviews_service.get_place_reviews(lat, lng)
-        return reviews_data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch reviews: {str(e)}")
+
