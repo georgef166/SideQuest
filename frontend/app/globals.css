@@ -32,6 +32,39 @@ body {
   font-weight: 400;
 }
 
+/* Title Typography - TripAdvisor-style boldness and compactness */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--font-inter);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+/* Primary titles (large headlines) */
+.page-title, .hero-title {
+  font-weight: 800;
+  font-size: clamp(1.875rem, 4vw, 2.25rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 0.75rem;
+}
+
+/* Secondary titles */
+.section-title {
+  font-weight: 700;
+  font-size: 1.875rem;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+/* Subtitle text */
+.subtitle {
+  font-weight: 500;
+  opacity: 0.85;
+  margin-top: 0.25rem;
+}
+
 /* Dual Range Slider Styles */
 .thumb {
   -webkit-appearance: none;

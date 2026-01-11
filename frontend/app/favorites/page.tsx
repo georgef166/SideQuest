@@ -103,10 +103,10 @@ export default function FavoritesPage() {
         {user ? (
           <div>
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-[#4A295F] mb-2">
+              <h1 className="page-title text-[#4A295F]">
                 My Favorites
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-lg subtitle" style={{ fontWeight: 500, color: '#4B5563' }}>
                 Your saved quests and places
               </p>
             </div>

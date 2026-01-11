@@ -64,8 +64,8 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="max-w-3xl w-full p-8 bg-white rounded-lg shadow">
-        <h1 className="text-2xl font-bold text-[#4A295F] mb-4">Welcome to SideQuest</h1>
-        <p className="text-gray-600 mb-6">Quick setup — tell us your preferences so we can personalize your feed.</p>
+        <h1 className="page-title text-[#4A295F]">Welcome to SideQuest</h1>
+        <p className="text-lg subtitle mt-2" style={{ fontWeight: 500, color: '#4B5563' }}>Quick setup — tell us your preferences so we can personalize your feed.</p>
 
         <div className="space-y-6">
           {step === 1 && (
