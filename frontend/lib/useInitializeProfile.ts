@@ -13,18 +13,18 @@ export function useInitializeProfile() {
 
     async function initProfile() {
       try {
-        const existingProfile = await getProfileByUid(user.uid);
+        const existingProfile = await getProfileByUid(user!.uid);
         if (!existingProfile) {
           // Create initial profile with auth data
-          console.log('Creating initial profile for user:', user.uid);
+          console.log('Creating initial profile for user:', user!.uid);
           await createOrUpdateProfile(
-            user.uid,
+            user!.uid,
             {
               profile: {
-                legalName: user.displayName || '',
+                legalName: user!.displayName || '',
                 preferredName: '',
                 aboutMe: '',
-                photoURL: user.photoURL || '',
+                photoURL: user!.photoURL || '',
               },
               lifestyle: {
                 questVibe: [],
@@ -33,9 +33,9 @@ export function useInitializeProfile() {
               preferences: {},
             },
             {
-              displayName: user.displayName || undefined,
-              photoURL: user.photoURL || undefined,
-              email: user.email,
+              displayName: user!.displayName || undefined,
+              photoURL: user!.photoURL || undefined,
+              email: user!.email || '',
             }
           );
           console.log('Profile created successfully');

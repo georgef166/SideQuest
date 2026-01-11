@@ -76,29 +76,29 @@ export default function Home() {
   const [togglingFavorite, setTogglingFavorite] = useState<string | null>(null);
 
   const categories = [
-    'Sports',
-    'Entertainment',
-    'Bar',
-    'Music',
-    'Food',
     'Active',
-    'Cultural',
-    'Arts',
-    'Shopping',
-    'Cafe',
-    'Urban',
-    'Events',
     'Adventure',
-    'Relaxation',
-    'Social',
-    'Nightlife',
-    'Date Ideas',
-    'Hidden Gems',
-    'Trending',
-    'Local Favorites',
-    'Dessert',
-    'Live',
+    'Arts',
+    'Bar',
+    'Cafe',
     'Cheap',
+    'Cultural',
+    'Date Ideas',
+    'Dessert',
+    'Entertainment',
+    'Events',
+    'Food',
+    'Hidden Gems',
+    'Live',
+    'Local Favorites',
+    'Music',
+    'Nightlife',
+    'Relaxation',
+    'Shopping',
+    'Social',
+    'Sports',
+    'Trending',
+    'Urban',
   ];
 
   // Fuzzy search function - checks if query is contained in text (case-insensitive)
@@ -463,29 +463,40 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-[#4A295F]">SideQuest</h1>
-              {user && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => router.push('/favorites')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
-                  >
-                    Favorites
-                  </button>
-                  <button
-                    onClick={() => router.push('/profile')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium text-sm cursor-pointer"
-                  >
-                    Profile
-                  </button>
-                </div>
-              )}
+      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-3 items-center h-20 gap-4">
+            {/* Left: Logo */}
+            <div>
+              <h1 className="text-2xl font-bold text-[#4A295F]" style={{ fontWeight: 700, fontFamily: 'var(--font-inter)' }}>
+                SideQuest
+              </h1>
             </div>
-            <AuthButton />
+
+            {/* Center: Nav Links */}
+            {user && (
+              <div className="flex justify-center gap-8">
+                <button
+                  onClick={() => router.push('/favorites')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Favorites
+                </button>
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Profile
+                </button>
+              </div>
+            )}
+
+            {/* Right: Auth Actions */}
+            <div className="flex justify-end">
+              <AuthButton />
+            </div>
           </div>
         </div>
       </nav>
@@ -541,7 +552,7 @@ export default function Home() {
                   placeholder="Search events, places, or categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all text-gray-900"
                   style={{
                     borderColor: searchQuery ? '#4A295F' : '#d1d5db',
                     backgroundColor: '#ffffff',
@@ -569,7 +580,7 @@ export default function Home() {
                         className="px-4 py-2 rounded-full font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 shadow-sm"
                         style={{
                           backgroundColor: selectedCategories.includes(category) ? '#4A295F' : '#e5e7eb',
-                          color: selectedCategories.includes(category) ? 'white' : '#6b7280',
+                          color: selectedCategories.includes(category) ? 'white' : '#1f2937',
                           transform: selectedCategories.includes(category) ? 'scale(1.05)' : 'scale(1)',
                           cursor: 'pointer',
                         }}

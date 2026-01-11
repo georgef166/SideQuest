@@ -71,10 +71,7 @@ export async function createOrUpdateProfile(
         timePreference: formData.preferences?.timePreference || '',
         favoriteCategories: formData.preferences?.favoriteCategories || [],
         energyLevel: formData.preferences?.energyLevel || '',
-        socialComfort: formData.preferences?.socialComfort || '',
-        hiddenGemsSeeker: formData.preferences?.hiddenGemsSeeker || '',
-        pacePref: formData.preferences?.pacePref || '',
-        localKnowledge: formData.preferences?.localKnowledge || '',
+        socialComfort: formData.preferences?.socialComfort || [],
         updatedAt: now,
       },
 

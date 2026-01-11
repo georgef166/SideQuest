@@ -22,11 +22,12 @@ export default function AuthButton() {
               className="w-8 h-8 rounded-full cursor-pointer"
             />
           )}
-          <span className="text-sm font-semibold text-[#4A295F] cursor-pointer">{user.displayName}</span>
+          <span className="text-sm font-semibold text-[#4A295F] cursor-pointer" style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}>{user.displayName}</span>
         </Link>
         <button
           onClick={() => signOut()}
           className="px-4 py-2 bg-[#4A295F] text-white rounded hover:bg-[#3a1f4d] cursor-pointer"
+          style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}
         >
           Sign Out
         </button>
@@ -38,6 +39,7 @@ export default function AuthButton() {
     <button
       onClick={() => signInWithGoogle()}
       className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 cursor-pointer"
+      style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">
         <path
