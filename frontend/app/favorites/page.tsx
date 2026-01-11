@@ -6,6 +6,8 @@ import { useAuth } from '@/lib/useAuth';
 import { getFavorites, removeFromFavorites, Favorite } from '@/lib/favorites';
 import AuthButton from '@/components/AuthButton';
 
+import Navbar from '@/components/Navbar';
+
 export default function FavoritesPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
@@ -64,61 +66,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-3 items-center h-20 gap-4">
-            {/* Left: Logo */}
-            <div>
-              <button
-                onClick={() => router.push('/')}
-                className="text-2xl text-[#4A295F] hover:text-purple-900 transition cursor-pointer"
-                style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}
-              >
-                SideQuest
-              </button>
-            </div>
-
-            {/* Center: Nav Links */}
-            {user && (
-              <div className="flex justify-center gap-8">
-                <button
-                  onClick={() => router.push('/')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() => router.push('/favorites')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Favorites
-                </button>
-                <button
-                  onClick={() => router.push('/friends')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Friends
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Profile
-                </button>
-              </div>
-            )}
-
-            {/* Right: Auth Actions */}
-            <div className="flex justify-end">
-              <AuthButton />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {user ? (
@@ -127,7 +75,7 @@ export default function FavoritesPage() {
               <h1 className="page-title text-[#4A295F]">
                 My Favorites
               </h1>
-              <p className="text-lg subtitle" style={{ fontWeight: 500, color: '#4B5563' }}>
+              <p className="text-lg subtitle" style={{ fontWeight: 500, color: '#000000' }}>
                 Your saved quests and places
               </p>
             </div>
@@ -166,7 +114,26 @@ export default function FavoritesPage() {
                       key={favorite.item_id}
                       className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-200"
                     >
-                      <div className="w-full h-48 bg-gray-200 overflow-hidden">
+                      <div className="w-full h-48 bg-gray-200 overflow-hidden relative">
+                        {/* Favorite Heart Button */}
+                        <button
+                          onClick={() => handleRemoveFavorite(favorite.item_id)}
+                          disabled={removingId === favorite.item_id}
+                          className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md hover:scale-110 hover:bg-white transition-all duration-200 flex items-center justify-center disabled:opacity-50 cursor-pointer"
+                          title="Remove from favorites"
+                        >
+                          <svg
+                            className="w-6 h-6"
+                            fill="#FF385C"
+                            stroke="#FF385C"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                          </svg>
+                        </button>
                         <img
                           src={(() => {
                             // Priority 1: Use tag-based themed image
@@ -287,16 +254,9 @@ export default function FavoritesPage() {
 
                               router.push(`/quest/${quest.quest_id}`);
                             }}
-                            className="flex-1 px-4 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition text-sm font-medium cursor-pointer"
+                            className="w-full px-4 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition text-sm font-bold cursor-pointer"
                           >
                             View Quest
-                          </button>
-                          <button
-                            onClick={() => handleRemoveFavorite(favorite.item_id)}
-                            disabled={removingId === favorite.item_id}
-                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition text-sm font-medium disabled:opacity-50 cursor-pointer"
-                          >
-                            {removingId === favorite.item_id ? '...' : '🗑️'}
                           </button>
                         </div>
                       </div>

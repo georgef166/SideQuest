@@ -76,7 +76,7 @@ export default function AuthButton() {
   return (
     <button
       onClick={() => signInWithGoogle()}
-      className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 cursor-pointer"
+      className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 flex items-center gap-2 cursor-pointer"
       style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">

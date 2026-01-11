@@ -9,7 +9,9 @@ from app.quest_generator import QuestGenerator
 from app.google_places import GooglePlacesAPI
 from app.ticketmaster import TicketmasterAPI
 from app.email_service import EmailService
-from app.email_service import EmailService
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 quest_gen = QuestGenerator()
@@ -143,10 +145,10 @@ async def send_friend_request(request: FriendRequest):
     # Auto-create friendship
     friend = Friend(
         user_id=request.sender_id,
-        friend_id=request.receiver_id,
-        friend_name=request.receiver_email,
+        friend_id=str(uuid.uuid4()), # Generate a temporary ID for demo
+        friend_name=request.receiver_email.split('@')[0],
         friend_email=request.receiver_email,
-        created_at=datetime.now()
+        added_at=datetime.now()
     )
     friends_db.append(friend)
     

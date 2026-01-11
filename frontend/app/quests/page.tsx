@@ -8,6 +8,7 @@ import { completeQuest } from '@/lib/completions';
 import { useToast } from '@/lib/toast';
 import QuestCard from '@/components/QuestCard';
 import AuthButton from '@/components/AuthButton';
+import Navbar from '@/components/Navbar';
 
 export default function QuestsPage() {
   const router = useRouter();
@@ -66,17 +67,17 @@ export default function QuestsPage() {
     try {
       setCompleting(true);
       const result = await completeQuest(user.uid, selectedQuestId, selectedQuestTitle, rating || undefined, feedback || undefined);
-      
+
       // Deactivate the quest after completion
       try {
         await deactivateQuest(user.uid, selectedQuestId);
       } catch (error) {
         console.error('Error deactivating quest:', error);
       }
-      
+
       showToast(`Quest completed! You earned ${result.xp_earned} XP!`, 'success');
       setShowRating(false);
-      
+
       // Reload active quests
       await loadActiveQuests();
     } catch (error) {
@@ -105,76 +106,13 @@ export default function QuestsPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-3 items-center h-20 gap-4">
-            {/* Left: Logo */}
-            <div>
-              <h1 className="text-2xl text-[#4A295F]" style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                SideQuest
-              </h1>
-            </div>
-
-            {/* Center: Nav Links */}
-            <div className="flex justify-center gap-8">
-              <button
-                onClick={() => router.push('/')}
-                className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-              >
-                Home
-              </button>
-              <button
-                onClick={() => router.push('/favorites')}
-                className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-              >
-                Favorites
-              </button>
-              <button
-                onClick={() => router.push('/friends')}
-                className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-              >
-                Friends
-              </button>
-              <button
-                onClick={() => router.push('/profile')}
-                className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-              >
-                Profile
-              </button>
-              <button
-                onClick={() => router.push('/quests')}
-                className="transition text-sm font-semibold cursor-pointer border-b-2"
-                style={{
-                  fontWeight: 600,
-                  fontSize: '15px',
-                  fontFamily: 'var(--font-inter)',
-                  letterSpacing: 'normal',
-                  lineHeight: '1',
-                  color: '#4A295F',
-                  borderBottomColor: '#4A295F',
-                }}
-              >
-                Quests
-              </button>
-            </div>
-
-            {/* Right: Auth Actions */}
-            <div className="flex justify-end">
-              <AuthButton />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-[#4A295F] mb-2">Active Quests</h1>
-          <p className="text-lg text-gray-600">Your adventures in progress</p>
+          <p className="text-lg text-black">Your adventures in progress</p>
         </div>
 
         {loadingQuests ? (

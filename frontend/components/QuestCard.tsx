@@ -14,26 +14,26 @@ export default function QuestCard({ quest, onClick }: QuestCardProps) {
       className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
     >
       <div className="flex justify-between items-start mb-3">
-        <h3 className="text-xl font-bold">{quest.title}</h3>
-        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+        <h3 className="text-xl font-bold text-black">{quest.title}</h3>
+        <span className="px-3 py-1 bg-purple-100 text-[#4A295F] rounded-full text-sm font-semibold">
           {quest.category}
         </span>
       </div>
-      
-      <p className="text-gray-600 mb-4">{quest.description}</p>
-      
+
+      <p className="text-black mb-4">{quest.description}</p>
+
       <div className="flex flex-wrap gap-2 mb-4">
         {[...new Set(quest.tags)].map((tag, index) => (
           <span
             key={`${tag}-${index}`}
-            className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+            className="px-2 py-1 bg-purple-50 text-[#4A295F] rounded text-xs font-medium border border-purple-100"
           >
             #{tag}
           </span>
         ))}
       </div>
-      
-      <div className="flex justify-between items-center text-sm text-gray-500">
+
+      <div className="flex justify-between items-center text-sm text-black font-medium">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +60,7 @@ export default function QuestCard({ quest, onClick }: QuestCardProps) {
             {quest.difficulty.replace('_', ' ')}
           </span>
         </div>
-        <span className="text-blue-500 font-medium">Open Quest →</span>
+        <span className="text-[#4A295F] font-bold hover:translate-x-1 transition-transform inline-block">Open Quest →</span>
       </div>
     </div>
   );

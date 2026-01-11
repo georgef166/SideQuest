@@ -2,6 +2,7 @@
 
 import EmailPasswordAuth from '@/components/EmailPasswordAuth';
 import LocationDisplay from '@/components/LocationDisplay';
+import Navbar from '@/components/Navbar';
 import { useState, useEffect, useRef } from 'react';
 // TypeScript: declare window.google for Google Maps
 declare global {
@@ -286,8 +287,8 @@ export default function Home() {
 
         // Create custom pin with quest number
         const pinElement = new PinElement({
-          background: selectedQuestId === quest.quest_id ? '#2563eb' : '#6366f1',
-          borderColor: selectedQuestId === quest.quest_id ? '#1e40af' : '#4f46e5',
+          background: selectedQuestId === quest.quest_id ? '#5A3975' : '#4A295F',
+          borderColor: selectedQuestId === quest.quest_id ? '#3A194F' : '#4A295F',
           glyphColor: '#ffffff',
           glyph: `${index + 1}`,
           scale: selectedQuestId === quest.quest_id ? 1.3 : 1.0,
@@ -329,7 +330,7 @@ export default function Home() {
                 style="
                   margin-top: 12px;
                   width: 100%;
-                  background: #2563eb;
+                  background: #4A295F;
                   color: white;
                   padding: 8px 16px;
                   border-radius: 6px;
@@ -449,79 +450,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-200" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-3 items-center h-20 gap-4">
-            {/* Left: Logo */}
-            <div>
-              <h1 className="text-2xl text-[#4A295F]" style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                SideQuest
-              </h1>
-            </div>
-
-            {/* Center: Nav Links */}
-            {user && (
-              <div className="flex justify-center gap-8">
-                <button
-                  onClick={() => router.push('/')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() => router.push('/favorites')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Favorites
-                </button>
-                <button
-                  onClick={() => router.push('/friends')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Friends
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
-                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={() => router.push('/quests')}
-                  className="transition text-sm font-semibold cursor-pointer border-b-2 border-transparent"
-                  style={{ 
-                    fontWeight: 600, 
-                    fontSize: '15px', 
-                    fontFamily: 'var(--font-inter)', 
-                    letterSpacing: 'normal', 
-                    lineHeight: '1',
-                    color: '#4A295F'
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLButtonElement).style.color = '#5A3975';
-                    (e.target as HTMLButtonElement).style.borderBottomColor = '#4A295F';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLButtonElement).style.color = '#4A295F';
-                    (e.target as HTMLButtonElement).style.borderBottomColor = 'transparent';
-                  }}
-                >
-                  Quests
-                </button>
-              </div>
-            )}
-
-            {/* Right: Auth Actions */}
-            <div className="flex justify-end">
-              {user && <AuthButton />}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {user ? (
@@ -533,7 +462,7 @@ export default function Home() {
                   Discover Your Next Adventure
                 </h2>
 
-                <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#4B5563' }}>
+                <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#000000' }}>
                   {(!userLocation) && (
                     <>Loading your location...</>
                   )}
@@ -542,7 +471,7 @@ export default function Home() {
 
               {userLocation && (
                 <div className="p-3 bg-gray-50 rounded-lg mx-auto block w-fit mb-4" style={{ marginTop: '1rem' }}>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-black">
                     <strong>Your Current Location:</strong> <LocationDisplay lat={userLocation.lat} lng={userLocation.lng} />
                   </p>
                 </div>

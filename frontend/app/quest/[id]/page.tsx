@@ -9,6 +9,8 @@ import { addToFavorites, removeFromFavorites, getFavorites } from '@/lib/favorit
 import { activateQuest, deactivateQuest, isQuestActive, getActiveQuests } from '@/lib/activeQuests';
 import { useToast } from '@/lib/toast';
 import LocationDisplay from '@/components/LocationDisplay';
+import Navbar from '@/components/Navbar';
+import ShareToFriendsModal from '@/components/ShareToFriendsModal';
 
 export default function QuestDetailPage() {
   const params = useParams();
@@ -29,6 +31,7 @@ export default function QuestDetailPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
   const [isActive, setIsActive] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
 
   useEffect(() => {
     const loadQuest = async () => {
@@ -128,6 +131,7 @@ export default function QuestDetailPage() {
       await activateQuest(user.uid, quest);
       setIsActive(true);
       showToast('Quest activated! Ready to start?', 'success');
+      router.push('/quests');
     } catch (error) {
       console.error('Error activating quest:', error);
       showToast('Failed to activate quest', 'error');
@@ -151,14 +155,14 @@ export default function QuestDetailPage() {
     try {
       setCompleting(true);
       const result = await completeQuest(user.uid, quest.quest_id, quest.title, rating || undefined, feedback || undefined);
-      
+
       // Deactivate the quest after completion
       try {
         await deactivateQuest(user.uid, quest.quest_id);
       } catch (error) {
         console.error('Error deactivating quest:', error);
       }
-      
+
       showToast(`Quest completed! You earned ${result.xp_earned} XP!`, 'success');
       setShowRating(false);
       router.push('/profile');
@@ -190,6 +194,9 @@ export default function QuestDetailPage() {
       case 'twitter':
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`);
         break;
+      case 'dm':
+        setShowFriendsModal(true);
+        break;
     }
     setShowShareMenu(false);
   };
@@ -199,7 +206,7 @@ export default function QuestDetailPage() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4A295F] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading quest...</p>
+          <p className="mt-4 text-black font-medium">Loading quest...</p>
         </div>
       </div>
     );
@@ -234,7 +241,7 @@ export default function QuestDetailPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Quest Not Found</h2>
-            <p className="text-gray-600 mb-6">This quest doesn't exist or has expired.</p>
+            <p className="text-black mb-6">This quest doesn't exist or has expired.</p>
             <button
               onClick={() => router.push('/')}
               className="px-6 py-3 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
@@ -269,26 +276,19 @@ export default function QuestDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <button
-              onClick={() => router.push('/')}
-              className="text-2xl font-bold text-[#4A295F] hover:text-purple-900 transition"
-            >
-              SideQuest
-            </button>
-            <button
-              onClick={() => router.push('/')}
-              className="px-4 py-2 bg-[#4A295F] text-white rounded-lg hover:bg-purple-900 transition font-medium"
-            >
-              ← Back to Quests
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={() => router.push('/quests')}
+          className="mb-6 flex items-center text-[#4A295F] hover:text-purple-900 font-semibold transition-colors group"
+        >
+          <svg className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Quests
+        </button>
+
         {/* Quest Title */}
         <div className="mb-6">
           <h1 className="text-5xl font-bold text-[#4A295F] mb-4">{quest.title}</h1>
@@ -313,8 +313,8 @@ export default function QuestDetailPage() {
                 5.0
               </span>
             </div>
-            <span className="text-gray-500">•</span>
-            <span className="text-lg text-gray-600">
+            <span className="text-black font-medium">•</span>
+            <span className="text-lg text-black font-semibold">
               0 reviews
             </span>
           </div>
@@ -347,7 +347,7 @@ export default function QuestDetailPage() {
                 onClick={() => setActiveTab('overview')}
                 className={`px-8 py-4 font-semibold border-b-2 transition-colors ${activeTab === 'overview'
                   ? 'text-[#4A295F] border-[#4A295F]'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  : 'text-black border-transparent hover:text-gray-900'
                   }`}
               >
                 Overview
@@ -356,7 +356,7 @@ export default function QuestDetailPage() {
                 onClick={() => setActiveTab('details')}
                 className={`px-8 py-4 font-semibold border-b-2 transition-colors ${activeTab === 'details'
                   ? 'text-[#4A295F] border-[#4A295F]'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  : 'text-black border-transparent hover:text-gray-900'
                   }`}
               >
                 Details
@@ -371,7 +371,7 @@ export default function QuestDetailPage() {
                 {/* Description */}
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-3">About this experience</h2>
-                  <p className="text-gray-700 text-lg leading-relaxed">
+                  <p className="text-black text-lg leading-relaxed">
                     {quest.description.split('.')[0]}.
                   </p>
                 </div>
@@ -383,19 +383,19 @@ export default function QuestDetailPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className="text-sm text-gray-500 mb-1">Avg Time Spent</div>
+                    <div className="text-sm text-black mb-1">Avg Time Spent</div>
                     <div className="text-2xl font-bold text-gray-900">{totalTime} min</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className="text-sm text-gray-500 mb-1">Avg Money Spent</div>
+                    <div className="text-sm text-black mb-1">Avg Money Spent</div>
                     <div className="text-2xl font-bold text-gray-900">${totalCost.toFixed(0)}</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className="text-sm text-gray-500 mb-1">Best Time to Go</div>
+                    <div className="text-sm text-black mb-1">Best Time to Go</div>
                     <div className="text-lg font-bold text-gray-900">{quest.best_time || 'Anytime'}</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className="text-sm text-gray-500 mb-1">Age Group</div>
+                    <div className="text-sm text-black mb-1">Age Group</div>
                     <div className="text-lg font-bold text-gray-900">All Ages</div>
                   </div>
                 </div>
@@ -452,16 +452,16 @@ export default function QuestDetailPage() {
                           {step.type}
                         </span>
                         {step.estimated_time && (
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-black font-medium">
                             • {step.estimated_time} min
                           </span>
                         )}
                       </div>
                       <h3 className="text-xl font-bold text-[#4A295F] mb-2">{step.name}</h3>
                       {step.description && (
-                        <p className="text-gray-600 mb-3">{step.description}</p>
+                        <p className="text-black mb-3">{step.description}</p>
                       )}
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-2 text-sm text-black">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -479,7 +479,7 @@ export default function QuestDetailPage() {
         </div>
 
         {/* Action Buttons */}
-        < div className="bg-purple-50 rounded-lg shadow-lg p-6 relative" >
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-6 relative">
           <div className="flex gap-4">
             {!isActive ? (
               <button
@@ -494,14 +494,14 @@ export default function QuestDetailPage() {
               </button>
             ) : (
               <button
-                onClick={handleCompleteQuest}
+                onClick={() => router.push('/quests')}
                 disabled={!user}
                 className="flex-1 px-6 py-4 bg-[#4A295F] text-white font-bold rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                Complete Quest
+                View Active Quests
               </button>
             )}
             <button
@@ -537,6 +537,9 @@ export default function QuestDetailPage() {
                   <button onClick={() => handleShare('whatsapp')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
                     WhatsApp
                   </button>
+                  <button onClick={() => handleShare('dm')} className="w-full text-left px-4 py-2 hover:bg-purple-50 text-[#4A295F] text-sm font-bold transition-colors">
+                    DM to Friends
+                  </button>
                   <button onClick={() => handleShare('twitter')} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors">
                     Twitter
                   </button>
@@ -547,7 +550,7 @@ export default function QuestDetailPage() {
 
           {
             !user && (
-              <p className="mt-3 text-sm text-gray-500 text-center">
+              <p className="mt-3 text-sm text-black font-medium text-center">
                 Sign in to save favorites and track completions
               </p>
             )
@@ -614,6 +617,14 @@ export default function QuestDetailPage() {
               </div>
             )
           }
+
+          {showFriendsModal && quest && (
+            <ShareToFriendsModal
+              questTitle={quest.title}
+              questUrl={`${window.location.origin}/quest/${quest.quest_id}`}
+              onClose={() => setShowFriendsModal(false)}
+            />
+          )}
 
           <div className="mt-2 text-center pt-6">
             <button
