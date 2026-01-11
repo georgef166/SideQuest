@@ -136,7 +136,15 @@ export default function FavoritesPage() {
                         </button>
                         <img
                           src={(() => {
-                            // Priority 1: Use tag-based themed image
+                            // Priority 1: Use Google Places photo from first quest step
+                            if (quest.steps && quest.steps.length > 0) {
+                              const firstStep = quest.steps[0];
+                              if (firstStep.photo_url) {
+                                return firstStep.photo_url;
+                              }
+                            }
+
+                            // Priority 2: Use tag-based themed image
                             const tag = quest.tags[0]?.toLowerCase() || '';
                             const tagImageMap: Record<string, string> = {
                               'coffee': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&h=300',
