@@ -10,6 +10,8 @@ export interface UserPreferences {
     lat: number;
     lng: number;
   };
+  sortBy?: string;
+  onboardingCompleted?: boolean;
 }
 
 export const saveUserPreferences = async (

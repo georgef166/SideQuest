@@ -1,6 +1,36 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+// TypeScript: declare window.google for Google Maps
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
+// Google Maps Places Autocomplete hook
+function usePlacesAutocomplete(
+  inputRef: React.RefObject<HTMLInputElement | null>,
+  onPlaceSelected: (location: { lat: number; lng: number }) => void
+) {
+  useEffect(() => {
+    if (!window.google || !window.google.maps || !window.google.maps.places || !inputRef.current) return;
+    const Autocomplete = window.google.maps.places.Autocomplete;
+    if (!Autocomplete) return;
+    const autocomplete = new Autocomplete(inputRef.current, {
+      fields: ['geometry'],
+      types: ['geocode'],
+    });
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (place.geometry && place.geometry.location) {
+        const loc = place.geometry.location;
+        onPlaceSelected({ lat: loc.lat(), lng: loc.lng() });
+      }
+    });
+    // No cleanup needed for autocomplete
+  }, [inputRef, onPlaceSelected]);
+}
 import { useRouter } from 'next/navigation';
 import AuthButton from '@/components/AuthButton';
 import QuestCard from '@/components/QuestCard';
@@ -14,6 +44,15 @@ import { saveUserPreferences, getUserPreferences } from '@/lib/preferences';
 import { useToast } from '@/lib/toast';
 
 export default function Home() {
+    const locationInputRef = useRef<HTMLInputElement | null>(null);
+    // Attach Google Places Autocomplete to location input
+    usePlacesAutocomplete(locationInputRef, (loc) => {
+      setUserLocation(loc);
+      setLocationError('');
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setCenter(loc);
+      }
+    });
   const router = useRouter();
   const { user, loading } = useAuth();
   const { showToast } = useToast();
@@ -87,9 +126,12 @@ export default function Home() {
       if (prefs) {
         if (prefs.radius) setRadiusRange(prefs.radius);
         if (prefs.categories) setSelectedCategories(prefs.categories);
+        if (prefs.sortBy) setSortBy(prefs.sortBy);
       }
+      return prefs;
     } catch (error) {
       console.error('Error loading preferences:', error);
+      return null;
     }
   };
 
@@ -103,6 +145,7 @@ export default function Home() {
           radius: radiusRange,
           categories: selectedCategories,
           lastLocation: userLocation || undefined,
+          sortBy,
         });
       } catch (error) {
         console.error('Error saving preferences:', error);
@@ -165,7 +208,13 @@ export default function Home() {
 
     // Load favorites and preferences
     loadFavorites();
-    loadPreferences();
+    (async () => {
+      const prefs = await loadPreferences();
+      if (!prefs || !prefs.onboardingCompleted) {
+        // Redirect new users to onboarding to collect preferences
+        router.push('/onboarding');
+      }
+    })();
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -457,6 +506,18 @@ export default function Home() {
           <div>
             {/* Header Section */}
             <div className="mb-12">
+              {/* Location Search Bar (Google Places Autocomplete) */}
+              <div className="mb-4">
+                <input
+                  ref={locationInputRef}
+                  type="text"
+                  placeholder="Search for a location (address, city, landmark)"
+                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all mb-2"
+                  style={{ borderColor: '#4A295F', backgroundColor: '#f9f9fb' }}
+                  autoComplete="off"
+                />
+                <p className="text-xs text-gray-500 mt-1">Start typing to search for a new location. Powered by Google Places.</p>
+              </div>
               <h2 className="text-4xl font-bold text-[#4A295F] mb-2">
                 Discover Your Next Adventure
               </h2>

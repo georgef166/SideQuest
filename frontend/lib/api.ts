@@ -80,6 +80,6 @@ export async function getProfile(uid: string) {
 export async function updateProfile(uid: string, data: any) {
   return apiClient.post(`/api/profile/update`, {
     uid,
-    ...data,
+    data,
   });
 }

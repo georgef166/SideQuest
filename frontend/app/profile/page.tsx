@@ -217,6 +217,9 @@ export default function ProfilePage() {
 
   const renderPreferencesSection = () => (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button onClick={() => router.push('/onboarding')} className="px-4 py-2 bg-[#4A295F] text-white rounded">Edit Preferences</button>
+      </div>
       {preferences ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {preferences.radius && (
@@ -245,6 +248,12 @@ export default function ProfilePage() {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+          {preferences.sortBy && (
+            <div className="bg-purple-50 rounded-lg p-6 border border-purple-200">
+              <div className="text-sm font-semibold text-gray-600 mb-2">Default Sort</div>
+              <div className="text-xl font-bold text-[#4A295F]">{preferences.sortBy}</div>
             </div>
           )}
         </div>
