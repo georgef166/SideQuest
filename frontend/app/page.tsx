@@ -468,7 +468,7 @@ export default function Home() {
           <div className="grid grid-cols-3 items-center h-20 gap-4">
             {/* Left: Logo */}
             <div>
-              <h1 className="text-2xl text-[#4A295F]" style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}>
+              <h1 className="nav-logo">
                 SideQuest
               </h1>
             </div>
@@ -499,12 +499,12 @@ export default function Home() {
           <div>
             <div className="mb-12">
               {/* Location Search Bar (Google Places Autocomplete) */}
-              <div className="mb-4">
+              <div className="location-search-container mb-4">
                 <input
                   ref={locationInputRef}
                   type="text"
                   placeholder="Search for a location (address, city, landmark)"
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition-all mb-2"
+                  className="w-full border-2 focus:outline-none transition-all mb-2"
                   style={{ borderColor: '#4A295F', backgroundColor: '#f9f9fb' }}
                   autoComplete="off"
                 />
