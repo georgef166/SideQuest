@@ -23,6 +23,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "SideQuest - Local Adventures",
   description: "Turn boredom into instant local adventures",
+  icons: {
+    icon: "/sideQuestNoBg.png",
+  },
 };
 
 export default function RootLayout({

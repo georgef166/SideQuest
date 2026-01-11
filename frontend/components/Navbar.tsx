@@ -25,10 +25,19 @@ export default function Navbar() {
                     <div>
                         <button
                             onClick={() => router.push('/')}
-                            className="text-2xl text-[#4A295F] hover:text-purple-900 transition bg-transparent border-none cursor-pointer"
-                            style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}
+                            className="flex items-center gap-2 hover:opacity-80 transition bg-transparent border-none cursor-pointer"
                         >
-                            SideQuest
+                            <img 
+                                src="/sideQuestNoBg.png" 
+                                alt="SideQuest Logo" 
+                                className="h-8 w-8 object-contain"
+                            />
+                            <span 
+                                className="text-2xl text-[#4A295F] hover:text-purple-900 transition"
+                                style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}
+                            >
+                                SideQuest
+                            </span>
                         </button>
                     </div>
 
