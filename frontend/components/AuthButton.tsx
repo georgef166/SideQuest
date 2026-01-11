@@ -2,7 +2,7 @@
 
 import { signInWithGoogle, signOut } from '@/lib/auth';
 import { useAuth } from '@/lib/useAuth';
-import Link from 'next/link';
+import ProfileMenuDropdown from './ProfileMenuDropdown';
 
 export default function AuthButton() {
   const { user, loading } = useAuth();
@@ -14,16 +14,13 @@ export default function AuthButton() {
   if (user) {
     return (
       <div className="flex items-center gap-4">
-        <Link href="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          {user.photoURL && (
-            <img 
-              src={user.photoURL} 
-              alt={user.displayName || 'User'} 
-              className="w-8 h-8 rounded-full cursor-pointer"
-            />
-          )}
-          <span className="text-sm font-semibold text-[#4A295F] cursor-pointer" style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}>{user.displayName}</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ProfileMenuDropdown 
+            photoURL={user.photoURL || undefined} 
+            displayName={user.displayName || 'User'} 
+          />
+          <span className="text-sm font-semibold text-[#4A295F]" style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-inter)' }}>{user.displayName}</span>
+        </div>
         <button
           onClick={() => signOut()}
           className="px-4 py-2 bg-[#4A295F] text-white rounded hover:bg-[#3a1f4d] cursor-pointer"

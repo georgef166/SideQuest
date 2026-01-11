@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import { getUserStats, UserStats } from '@/lib/completions';
 import { getFavorites } from '@/lib/favorites';
@@ -18,15 +18,20 @@ interface Section {
   render: () => React.ReactNode;
 }
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading } = useAuth();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [preferences, setPreferences] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingData, setLoadingData] = useState(true);
-  const [activeSection, setActiveSection] = useState<SectionId>('overview');
+  const [activeSection, setActiveSection] = useState<SectionId | null>(null);
+  
+  // Check if we're in "section-only" mode (came from dropdown menu)
+  const sectionFromQuery = searchParams?.get('section') as SectionId | null;
+  const isSectionMode = sectionFromQuery !== null;
 
   useEffect(() => {
     if (!user) {
@@ -34,8 +39,13 @@ export default function ProfilePage() {
       return;
     }
 
+    // Set active section from query params if provided
+    if (sectionFromQuery) {
+      setActiveSection(sectionFromQuery);
+    }
+
     loadUserData();
-  }, [user]);
+  }, [user, sectionFromQuery]);
 
   const loadUserData = async () => {
     if (!user) return;
@@ -491,35 +501,39 @@ export default function ProfilePage() {
                 <p className="mt-4 text-gray-600">Loading your profile...</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Left Sidebar - Navigation */}
-                <div className="lg:col-span-1">
-                  <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                    <nav className="space-y-2">
-                      {sections.map((section) => (
-                        <button
-                          key={section.id}
-                          onClick={() => setActiveSection(section.id)}
-                          className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all border-l-4 cursor-pointer ${activeSection === section.id
-                            ? 'bg-purple-50 border-l-[#4A295F] text-[#4A295F]'
-                            : 'border-l-transparent text-gray-700 hover:bg-gray-50'
-                            }`}
-                        >
-                          {section.label}
-                        </button>
-                      ))}
-                    </nav>
+              <div className={isSectionMode ? '' : 'grid grid-cols-1 lg:grid-cols-4 gap-8'}>
+                {/* Left Sidebar - Navigation (hidden in section mode) */}
+                {!isSectionMode && (
+                  <div className="lg:col-span-1">
+                    <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                      <nav className="space-y-2">
+                        {sections.map((section) => (
+                          <button
+                            key={section.id}
+                            onClick={() => setActiveSection(section.id)}
+                            className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all border-l-4 cursor-pointer ${activeSection === section.id
+                              ? 'bg-purple-50 border-l-[#4A295F] text-[#4A295F]'
+                              : 'border-l-transparent text-gray-700 hover:bg-gray-50'
+                              }`}
+                          >
+                            {section.label}
+                          </button>
+                        ))}
+                      </nav>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Right Content Panel */}
-                <div className="lg:col-span-3">
+                <div className={isSectionMode ? 'w-full' : 'lg:col-span-3'}>
                   <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
                     {activeSection_obj && (
                       <>
-                        <h2 className="section-title text-[#4A295F] mb-6">
-                          {activeSection_obj.label}
-                        </h2>
+                        {!isSectionMode && (
+                          <h2 className="section-title text-[#4A295F] mb-6">
+                            {activeSection_obj.label}
+                          </h2>
+                        )}
                         {activeSection_obj.render()}
                       </>
                     )}
@@ -543,5 +557,13 @@ export default function ProfilePage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4A295F] mx-auto"></div></div></div>}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }
