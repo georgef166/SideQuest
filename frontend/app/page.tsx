@@ -468,7 +468,7 @@ export default function Home() {
           <div className="grid grid-cols-3 items-center h-20 gap-4">
             {/* Left: Logo */}
             <div>
-              <h1 className="text-2xl font-bold text-[#4A295F]" style={{ fontWeight: 700, fontFamily: 'var(--font-inter)' }}>
+              <h1 className="text-2xl text-[#4A295F]" style={{ fontWeight: 800, fontFamily: 'var(--font-inter)', letterSpacing: '-0.03em', lineHeight: 1 }}>
                 SideQuest
               </h1>
             </div>
@@ -511,24 +511,29 @@ export default function Home() {
                 />
                 <p className="text-xs text-gray-500 mt-1">Start typing to search for a new location. Powered by Google Places.</p>
               </div>
-              <h2 className="page-title text-[#4A295F] text-center" style={{ fontFamily: 'var(--font-inter)' }}>
-                Discover Your Next Adventure
-              </h2>
-              <p className="text-lg mb-6 text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#4B5563' }}>
-                {userLocation ? (
-                  <>Showing activities between {radiusRange[0]}km and {radiusRange[1]}km</>
-                ) : (
-                  <>Loading your location...</>
-                )}
-              </p>
 
-              {userLocation && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg mx-auto block w-fit">
-                  <p className="text-sm text-gray-700">
-                    <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-                  </p>
-                </div>
-              )}
+              {/* Centered Title, Location Pill, and Subtitle Section */}
+              <div className="flex flex-col items-center">
+                <h2 className="page-title text-[#4A295F]" style={{ fontFamily: 'var(--font-inter)' }}>
+                  Discover Your Next Adventure
+                </h2>
+
+                {userLocation && (
+                  <div className="p-3 bg-gray-50 rounded-lg my-3">
+                    <p className="text-sm text-gray-700">
+                      <strong>Location:</strong> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-lg text-center subtitle" style={{ fontWeight: 500, fontFamily: 'var(--font-inter)', color: '#4B5563' }}>
+                  {userLocation ? (
+                    <>Showing activities between {radiusRange[0]}km and {radiusRange[1]}km</>
+                  ) : (
+                    <>Loading your location...</>
+                  )}
+                </p>
+              </div>
 
               {locationError && (
                 <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
