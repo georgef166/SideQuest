@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DualRangeSlider from '@/components/DualRangeSlider';
 import { useAuth } from '@/lib/useAuth';
@@ -11,7 +11,7 @@ const categoriesList = [
   'Food', 'Events', 'Outdoors', 'Arts', 'Music', 'Cafe', 'Bars', 'Active', 'Hidden Gems', 'Date Ideas', 'Shopping', 'Nightlife', 'Relaxation'
 ];
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
@@ -156,5 +156,13 @@ export default function OnboardingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>}>
+      <OnboardingContent />
+    </Suspense>
   );
 }

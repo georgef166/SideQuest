@@ -80,7 +80,21 @@ export default function FavoritesPage() {
 
             {/* Center: Nav Links */}
             {user && (
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-8">
+                <button
+                  onClick={() => router.push('/')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Home
+                </button>
+                <button
+                  onClick={() => router.push('/favorites')}
+                  className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
+                  style={{ fontWeight: 600, fontSize: '15px', fontFamily: 'var(--font-inter)', letterSpacing: 'normal', lineHeight: '1' }}
+                >
+                  Favorites
+                </button>
                 <button
                   onClick={() => router.push('/profile')}
                   className="text-gray-700 hover:text-gray-900 transition text-sm font-semibold cursor-pointer border-b-2 border-transparent hover:border-gray-900"
